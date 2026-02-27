@@ -1,0 +1,46 @@
+# =========================
+# Node
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Next.js / Frontend
+# =========================
+.next/
+out/
+build/
+
+# =========================
+# Backend
+# =========================
+dist/
+coverage/
+
+# =========================
+# Prisma
+# =========================
+/generated/prisma
+prisma/migrations/
+
+# =========================
+# Logs
+# =========================
+logs
+*.log
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
