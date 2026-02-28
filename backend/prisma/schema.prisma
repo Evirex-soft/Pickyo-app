@@ -1,7 +1,5 @@
 generator client {
-  provider = "prisma-client"
-  output   = "./generated/prisma/client"
-  previewFeatures = ["driverAdapters"] 
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -12,9 +10,11 @@ model User {
   id           String   @id @default(uuid())
   name         String
   email        String   @unique
-  phone        String   @unique
-  password     String
-  role         Role
+  phone        String?   @unique
+  password     String?
+  googleId     String?  @unique
+  role         Role?
+  isProfileComplete Boolean @default(false)
   isActive     Boolean  @default(true)
 
   createdAt    DateTime @default(now())

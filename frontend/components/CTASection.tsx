@@ -28,7 +28,10 @@ export default function CTASection() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/booking">
-              <Button variant='light' className="h-14 px-8 bg-white text-indigo-600 hover:bg-indigo-50 font-bold rounded-full text-lg">
+              <Button
+                variant="light"
+                className="h-14 px-8 bg-white text-indigo-600 hover:bg-indigo-50 font-bold rounded-full text-lg"
+              >
                 Book Now
               </Button>
             </Link>
