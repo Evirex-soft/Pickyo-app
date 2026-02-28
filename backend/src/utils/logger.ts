@@ -1,0 +1,23 @@
+import winston from "winston";
+import 'dotenv/config';
+
+const { combine, timestamp, printf, colorize, errors, json } = winston.format;
+
+// custom format for development
+const devFormat = printf(({ level, message, timestamp, stack }) => {
+    return `${timestamp} [${level}]: ${stack || message}`
+});
+
+export const logger = winston.createLogger({
+    level: 'info',
+    format: combine(
+        timestamp(),
+        errors({ stack: true }),
+        process.env.NODE_ENV === 'production' ? json() : combine(colorize(), devFormat)
+    ),
+    transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({ filename: "logs/error.log", level: 'error' }),
+        new winston.transports.File({ filename: "logs/combined.log" }),
+    ]
+});

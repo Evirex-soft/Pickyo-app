@@ -1,14 +1,86 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "./generated/prisma/client"
+  previewFeatures = ["driverAdapters"] 
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  phone        String   @unique
+  password     String
+  role         Role
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  customerProfile   CustomerProfile?
+  driverProfile     DriverProfile?
+  wallet            Wallet?
+  refreshTokens     RefreshToken[]
+}
+
+model CustomerProfile {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  userType  UserType @default(individual)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DriverProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  vehicleType  VehicleType
+  licenseNo    String?
+  isApproved   Boolean  @default(false)
+  rating       Float    @default(0)
+  totalTrips   Int      @default(0)
+  isOnline     Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Float    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  customer
+  driver
+  admin
+}
+
+enum UserType {
+  individual
+  business
+}
+
+enum VehicleType {
+  bike
+  pickups
+  mini_truck
+  truck
 }
