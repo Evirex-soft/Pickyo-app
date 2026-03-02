@@ -96,7 +96,11 @@ function CompleteProfileContent() {
       });
 
       setTimeout(() => {
-        router.push('/dashboard');
+        if (activeRole === 'driver') {
+          router.push('/driver/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
       }, 1500);
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || 'Failed to update profile.';
@@ -289,7 +293,7 @@ function CompleteProfileContent() {
 
             {/* Gradient Overlay */}
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${theme.bgGradient} opacity-90 mix-blend-multiply`}
+              className={`absolute inset-0 bg-linear-to-br ${theme.bgGradient} opacity-90 mix-blend-multiply`}
             />
 
             {/* Texture Overlay (Optional for detail) */}
@@ -347,7 +351,7 @@ function CompleteProfileContent() {
         </div>
 
         {/* Decorative bottom element */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-slate-900/50 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-slate-900/50 to-transparent pointer-events-none" />
       </div>
     </div>
   );

@@ -11,8 +11,8 @@ export default function HeroSection() {
     <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute -top-[30%] -right-[10%] w-[800px] h-[800px] rounded-full bg-gradient-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
-        <div className="absolute top-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-blue-100/40 to-emerald-50/30 blur-3xl" />
+        <div className="absolute -top-[30%] -right-[10%] w-200 h-200 rounded-full bg-linear-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
+        <div className="absolute top-[20%] -left-[10%] w-150 h-150 rounded-full bg-linear-to-tr from-blue-100/40 to-emerald-50/30 blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
@@ -46,7 +46,7 @@ export default function HeroSection() {
               <div className="overflow-hidden block">
                 <motion.span
                   variants={textReveal}
-                  className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500"
+                  className="block text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-blue-500"
                 >
                   Modern Age.
                 </motion.span>
@@ -81,15 +81,15 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative lg:h-[600px] w-full flex items-center justify-center perspective-1000"
+          className="relative lg:h-150 w-full flex items-center justify-center perspective-1000"
         >
-          {/* THE PHONE CONTAINER (Made smaller/shorter) */}
+          {/* THE PHONE CONTAINER */}
           <div
             className="relative
     w-[min(80vw,360px)]
     sm:w-[min(70vw,390px)]
-    lg:w-[380px]
-    aspect-[9/16]
+    lg:w-95
+    aspect-9/16
     bg-slate-900
     rounded-[2.8rem]
     p-4
@@ -99,7 +99,7 @@ export default function HeroSection() {
     ring-1
     ring-slate-900/50
     transform
-    rotate-[-6deg]
+    -rotate-6
     hover:rotate-0
     transition-transform
     duration-700
@@ -110,7 +110,7 @@ export default function HeroSection() {
             <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-slate-950 rounded-b-xl z-50"></div>
 
             {/* Screen Content */}
-            <div className="w-full h-full bg-slate-50 rounded-[2rem] overflow-hidden relative flex flex-col">
+            <div className="w-full h-full bg-slate-50 rounded-4xl overflow-hidden relative flex flex-col">
               {/* --- MAP LAYER --- */}
               <div className="absolute inset-0 z-0">
                 {/* 1. Map Base & Grid */}
@@ -125,8 +125,8 @@ export default function HeroSection() {
                 ></div>
 
                 {/* 2. Green Zones (Parks) */}
-                <div className="absolute top-16 left-[-20px] w-32 h-32 bg-emerald-100/60 rounded-full blur-xl"></div>
-                <div className="absolute bottom-32 right-[-20px] w-40 h-40 bg-emerald-100/60 rounded-full blur-xl"></div>
+                <div className="absolute top-16 -left-5 w-32 h-32 bg-emerald-100/60 rounded-full blur-xl"></div>
+                <div className="absolute bottom-32 -right-5 w-40 h-40 bg-emerald-100/60 rounded-full blur-xl"></div>
 
                 {/* 3. SVG Route Path */}
                 <svg
@@ -188,7 +188,7 @@ export default function HeroSection() {
                 </div>
 
                 {/* Bottom: Compact Driver Sheet */}
-                <div className="p-3 pb-5 pt-8 bg-gradient-to-t from-white via-white/80 to-transparent">
+                <div className="p-3 pb-5 pt-8 bg-linear-to-t from-white via-white/80 to-transparent">
                   <div className="bg-white rounded-2xl p-4 shadow-xl border border-slate-100 pointer-events-auto">
                     {/* Handle */}
                     <div className="w-8 h-1 bg-slate-200 rounded-full mx-auto mb-3"></div>

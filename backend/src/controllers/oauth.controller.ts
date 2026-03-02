@@ -21,7 +21,7 @@ export const googleCallback = async (req: any, res: Response) => {
     httpOnly: true,
     secure: false,
     sameSite: 'lax',
-    maxAge: 1 * 60 * 1000,
+    maxAge: 15 * 60 * 1000,
   });
 
   res.cookie('refreshToken', refreshToken, {
@@ -33,6 +33,14 @@ export const googleCallback = async (req: any, res: Response) => {
 
   if (!user.isProfileComplete) {
     return res.redirect(`${process.env.FRONTEND_URL}/complete-profile`);
+  }
+
+  if (user.role === 'admin') {
+    return res.redirect(`${process.env.FRONTEND_URL}/admin/dashboard`);
+  }
+
+  if (user.role === 'driver') {
+    return res.redirect(`${process.env.FRONTEND_URL}/driver/dashboard`);
   }
 
   return res.redirect(`${process.env.FRONTEND_URL}/dashboard`);

@@ -74,3 +74,32 @@ export const completeProfileSchema = z
       });
     }
   });
+
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email format').toLowerCase(),
+
+  password: z.string().min(1, 'Password is required'),
+
+  role: z.enum(['customer', 'driver', 'admin']),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email format').toLowerCase(),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Invalid reset token'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/[A-Z]/, 'Must include at least 1 uppercase letter')
+      .regex(/[a-z]/, 'Must include at least 1 lowercase letter')
+      .regex(/[0-9]/, 'Must include at least 1 number')
+      .regex(/[^A-Za-z0-9]/, 'Must include at least 1 special character'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });

@@ -56,7 +56,7 @@ export const register = async (req: Request, res: Response) => {
       return user;
     });
 
-    const accessToken = generateAccessToken(result.id, result.role);
+    const accessToken = generateAccessToken(result.id, result.role!);
     const refreshToken = generateRefreshToken(result.id);
 
     await prisma.refreshToken.create({
@@ -99,7 +99,7 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -108,13 +108,24 @@ export const login = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'Invalid credentials' });
   }
 
-  const valid = await bcrypt.compare(password, user.password);
+  // Ensure the user is logging in with the correct role
+  if (user.role !== role) {
+    logger.error(`Role mismatch for ${email}`);
+    return res.status(403).json({ message: 'Access denied for this role' });
+  }
+
+  // If user registered via OAuth, they won't have a password
+  if (!user.password) {
+    return res.status(400).json({ message: 'Use Google login' });
+  }
+
+  const valid = await bcrypt.compare(password, user.password!);
   if (!valid) {
     logger.error(`Login failed: Invalid password for user ${email}`);
     return res.status(400).json({ message: 'Invalid credentials' });
   }
 
-  const accessToken = generateAccessToken(user.id, user.role);
+  const accessToken = generateAccessToken(user.id, user.role!);
   const refreshToken = generateRefreshToken(user.id);
 
   logger.info(`User logged in successfully: ${email}`);

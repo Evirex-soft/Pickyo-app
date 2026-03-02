@@ -6,10 +6,15 @@ export const registerUser = async (payload: RegisterPayload): Promise<BasicRespo
   return data;
 };
 
-export const loginUser = async (email: string, password: string): Promise<BasicResponse> => {
+export const loginUser = async (
+  email: string,
+  password: string,
+  role: string,
+): Promise<BasicResponse> => {
   const { data } = await api.post<BasicResponse>('/auth/login', {
     email,
     password,
+    role,
   });
   return data;
 };

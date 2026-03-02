@@ -37,6 +37,6 @@ app.use(
 // Routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/oauth', oauthRoutes);
-app.use('/api/users', authLimiter, userRoutes);
+app.use('/api/users', userRoutes);
 
 export default app;
