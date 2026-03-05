@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   completeProfileController,
   forgotPasswordController,
+  getProfileController,
   refreshTokenController,
   resetPasswordController,
 } from '../controllers/user.controller';
@@ -21,5 +22,8 @@ router.post('/forgot-password', authLimiter, forgotPasswordController);
 
 // Reset password
 router.post('/reset-password', authLimiter, resetPasswordController);
+
+// Get profile
+router.get('/me', protect, getProfileController);
 
 export default router;

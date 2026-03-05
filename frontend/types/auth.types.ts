@@ -12,6 +12,22 @@ export interface RegisterPayload {
   vehicleType?: string;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'driver' | 'customer';
+  isProfileComplete?: boolean;
+  wallet?: {
+    balance: number;
+  };
+}
+
 export interface BasicResponse {
   message: string;
+  user: User
+}
+
+export interface ProfileResponse {
+  user: User
 }

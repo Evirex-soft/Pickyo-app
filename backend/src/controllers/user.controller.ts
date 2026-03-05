@@ -113,7 +113,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
     });
     logger.info(`Access token refreshed for user ${storedToken.userId}`);
     return res.status(200).json({ message: 'Access token refreshed' });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // Forgot Password
@@ -205,5 +205,37 @@ export const resetPasswordController = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error(`Error in reset password: ${error}`);
     return res.status(500).json({ message: 'Error processing request' });
+  }
+};
+
+
+// Get Profile Controller
+export const getProfileController = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const userProfile = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isProfileComplete: true,
+        wallet: true,
+      }
+    });
+
+    if (!userProfile) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    logger.info('User profile fetched');
+    res.json({ user: userProfile });
+  } catch (error) {
+    logger.error('Error fetching user profile')
+    res.status(500).json({ message: 'Server error' });
   }
 };

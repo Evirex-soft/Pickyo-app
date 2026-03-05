@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
+import { useDispatch, UseDispatch } from 'react-redux';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +21,8 @@ import { Toaster, toast } from 'sonner';
 import { redirectToGoogle } from '@/services/oauth.service';
 import { loginUser } from '@/services/auth.service';
 import { loginSchema } from '@/zod/registerSchema';
+import { setCredentials } from '@/store/authSlice';
+
 
 // Wrap the main content in Suspense because we use useSearchParams
 export default function LoginPage() {
@@ -43,6 +46,7 @@ function LoginContent() {
   // const [userType, setUserType] = useState<'individual' | 'business'>('individual');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
 
   const [form, setForm] = useState({
     email: '',
@@ -116,7 +120,9 @@ function LoginContent() {
     setIsLoading(true);
 
     try {
-      await loginUser(payload.email, payload.password, payload.role);
+      const response = await loginUser(payload.email, payload.password, payload.role);
+
+      dispatch(setCredentials(response.user));
 
       toast.success(`Welcome back!`, {
         description: `Logged in successfully as ${activeRole}.`,
@@ -186,11 +192,10 @@ function LoginContent() {
                   setActiveRole(role);
                   setForm({ email: '', password: '' });
                 }}
-                className={`flex-1 relative py-2 text-sm font-semibold rounded-md capitalize transition-all z-10 ${
-                  activeRole === role
-                    ? 'text-slate-900 shadow-sm bg-white'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
+                className={`flex-1 relative py-2 text-sm font-semibold rounded-md capitalize transition-all z-10 ${activeRole === role
+                  ? 'text-slate-900 shadow-sm bg-white'
+                  : 'text-slate-500 hover:text-slate-700'
+                  }`}
               >
                 {role}
               </button>
