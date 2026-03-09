@@ -1,9 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { useBooking } from "../BookingContext";
 import { Autocomplete } from "@react-google-maps/api";
-import { useRef } from "react";
+import { estimateRide } from "@/services/ride.service";
 
 export default function StepLocation() {
     const { bookingState, updateBooking, nextStep } = useBooking();
@@ -27,8 +28,30 @@ export default function StepLocation() {
         }
     };
 
-    const handleNext = () => {
-        if (bookingState.pickup && bookingState.drop) nextStep();
+    const handleNext = async () => {
+        if (!bookingState.pickup || !bookingState.drop) return;
+
+        try {
+            const result = await estimateRide({
+                pickup: {
+                    lat: bookingState.pickup.lat,
+                    lng: bookingState.pickup.lng,
+                },
+                drop: {
+                    lat: bookingState.drop.lat,
+                    lng: bookingState.drop.lng,
+                },
+            });
+
+            updateBooking({
+                distance: result.distanceKm,
+                price: result.price,
+            });
+
+            nextStep();
+        } catch (error) {
+            console.error("Estimate ride failed", error);
+        }
     };
 
     return (

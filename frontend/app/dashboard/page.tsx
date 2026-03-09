@@ -34,7 +34,6 @@ function DashboardContent() {
 export default function DashboardPage() {
     return (
         <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
-            <div className="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-soft-light bg-[url('/noise.png')]"></div>
 
             <div className="relative z-10">
                 <DashboardHeader />

@@ -11,6 +11,8 @@ import { ChevronLeft } from "lucide-react";
 export default function BookingWizard() {
     const { step, prevStep, bookingState } = useBooking();
 
+    const isRideActive = step === 4;
+
     const steps = [
         { title: "Location", component: <StepLocation /> },
         { title: "Details", component: <StepDetails /> },
@@ -19,43 +21,50 @@ export default function BookingWizard() {
     ];
 
     return (
-        <div className="w-full max-w-7xl mx-auto h-150 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col md:flex-row">
+        <div className="w-full max-w-7xl mx-auto h-150 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
 
-            <div className="w-full md:w-[40%] flex flex-col border-r border-zinc-200 dark:border-zinc-800">
+            <div className="w-full md:w-100 lg:w-112.5 flex flex-col border-r border-zinc-200 dark:border-zinc-800 relative z-20 shadow-lg">
 
-                <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                    <button
-                        onClick={prevStep}
-                        className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full"
-                    >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
+                {/* Header: Hide navigation if on Step 4 to lock user in the ride flow */}
+                {!isRideActive && (
+                    <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-900">
+                        <button
+                            onClick={prevStep}
+                            disabled={step === 1}
+                            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full disabled:opacity-0 transition-opacity"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
 
-                    <div className="flex gap-1">
-                        {[1, 2, 3, 4].map((s) => (
-                            <div
-                                key={s}
-                                className={`h-1.5 w-6 rounded-full ${s <= step ? "bg-blue-600" : "bg-zinc-200"
-                                    }`}
-                            />
-                        ))}
+                        <div className="flex gap-2">
+                            {[1, 2, 3, 4].map((s) => (
+                                <div
+                                    key={s}
+                                    className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${s <= step ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-zinc-800"
+                                        }`}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
+                )}
 
-                <div className="flex-1 p-6 md:p-8 overflow-y-auto">
+                {/* Content Area */}
+                <div className="flex-1 p-6 md:p-8 overflow-y-auto custom-scrollbar">
                     {steps[step - 1].component}
                 </div>
             </div>
 
-            <div className="hidden md:block w-[60%] p-4 bg-zinc-50 dark:bg-zinc-950 relative">
+            {/* Map Area */}
+            <div className="hidden md:block flex-1 bg-zinc-50 dark:bg-zinc-950 relative">
                 <MapPreview />
 
-                {bookingState.distance > 0 && step >= 3 && (
-                    <div className="absolute top-8 right-8 bg-white dark:bg-zinc-900 px-4 py-2 rounded-xl shadow-xl">
-                        <p className="text-xs text-zinc-500 uppercase font-bold tracking-wider">
+                {/* Floating Info Overlay (Distance/ETA) */}
+                {bookingState.distance > 0 && !isRideActive && (
+                    <div className="absolute top-8 left-8 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-4 py-3 rounded-2xl shadow-lg border border-zinc-100 dark:border-zinc-800">
+                        <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">
                             Est. Distance
                         </p>
-                        <p className="text-xl font-bold">
+                        <p className="text-lg font-bold text-zinc-900 dark:text-white">
                             {bookingState.distance.toFixed(1)} km
                         </p>
                     </div>
@@ -64,4 +73,5 @@ export default function BookingWizard() {
 
         </div>
     );
+
 }

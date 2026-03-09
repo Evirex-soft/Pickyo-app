@@ -21,7 +21,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { registerUser } from '@/services/auth.service';
 import { registerSchema } from '@/zod/registerSchema';
 import { redirectToGoogle } from '@/services/oauth.service';
@@ -32,8 +32,6 @@ export default function RegisterPage() {
       fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
     >
       <RegisterContent />
-
-      <Toaster position="top-right" richColors />
     </Suspense>
   );
 }
@@ -168,11 +166,10 @@ function RegisterContent() {
                 key={role}
                 type="button" // Important: prevent form submission
                 onClick={() => setActiveRole(role)}
-                className={`flex-1 relative py-2 text-sm font-semibold rounded-md capitalize transition-all z-10 ${
-                  activeRole === role
-                    ? 'text-slate-900 shadow-sm bg-white'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
+                className={`flex-1 relative py-2 text-sm font-semibold rounded-md capitalize transition-all z-10 ${activeRole === role
+                  ? 'text-slate-900 shadow-sm bg-white'
+                  : 'text-slate-500 hover:text-slate-700'
+                  }`}
               >
                 {role}
               </button>
@@ -192,22 +189,20 @@ function RegisterContent() {
                   <button
                     type="button"
                     onClick={() => setUserType('individual')}
-                    className={`flex items-center justify-center gap-2 py-3 border-2 rounded-xl transition-all ${
-                      userType === 'individual'
-                        ? `border-${theme.color}-600 bg-${theme.color}-50 text-${theme.color}-700`
-                        : 'border-slate-100 text-slate-500'
-                    }`}
+                    className={`flex items-center justify-center gap-2 py-3 border-2 rounded-xl transition-all ${userType === 'individual'
+                      ? `border-${theme.color}-600 bg-${theme.color}-50 text-${theme.color}-700`
+                      : 'border-slate-100 text-slate-500'
+                      }`}
                   >
                     <User className="w-4 h-4" /> <span className="text-sm font-bold">Personal</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setUserType('business')}
-                    className={`flex items-center justify-center gap-2 py-3 border-2 rounded-xl transition-all ${
-                      userType === 'business'
-                        ? `border-${theme.color}-600 bg-${theme.color}-50 text-${theme.color}-700`
-                        : 'border-slate-100 text-slate-500'
-                    }`}
+                    className={`flex items-center justify-center gap-2 py-3 border-2 rounded-xl transition-all ${userType === 'business'
+                      ? `border-${theme.color}-600 bg-${theme.color}-50 text-${theme.color}-700`
+                      : 'border-slate-100 text-slate-500'
+                      }`}
                   >
                     <Building2 className="w-4 h-4" />{' '}
                     <span className="text-sm font-bold">Business</span>
@@ -293,11 +288,10 @@ function RegisterContent() {
                         key={v.id}
                         onClick={() => setSelectedVehicle(v.id)}
                         className={`border rounded-lg p-2 flex flex-col items-center justify-center cursor-pointer transition-all
-                                                    ${
-                                                      selectedVehicle === v.id
-                                                        ? 'border-emerald-500 bg-emerald-50'
-                                                        : 'border-slate-200 hover:border-emerald-300'
-                                                    }
+                                                    ${selectedVehicle === v.id
+                            ? 'border-emerald-500 bg-emerald-50'
+                            : 'border-slate-200 hover:border-emerald-300'
+                          }
                                                 `}
                       >
                         <v.icon

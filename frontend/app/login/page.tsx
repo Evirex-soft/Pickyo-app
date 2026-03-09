@@ -17,7 +17,7 @@ import {
   EyeOff,
   CheckCircle2,
 } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 import { redirectToGoogle } from '@/services/oauth.service';
 import { loginUser } from '@/services/auth.service';
 import { loginSchema } from '@/zod/registerSchema';
@@ -31,7 +31,6 @@ export default function LoginPage() {
       fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
     >
       <LoginContent />
-      <Toaster position="top-right" richColors />
     </Suspense>
   );
 }
@@ -110,7 +109,7 @@ function LoginContent() {
     if (!validation.success) {
       const firstError = validation.error.issues[0];
 
-      toast.error('Validation Error', {
+      toast.error("Validation Error", {
         description: firstError.message,
       });
 
@@ -120,35 +119,33 @@ function LoginContent() {
     setIsLoading(true);
 
     try {
-      const response = await loginUser(payload.email, payload.password, payload.role);
+      const response = await loginUser(
+        payload.email,
+        payload.password,
+        payload.role
+      );
 
       dispatch(setCredentials(response.user));
 
-      toast.success(`Welcome back!`, {
+      toast.success("Welcome back!", {
         description: `Logged in successfully as ${activeRole}.`,
       });
 
-      setTimeout(() => {
-        if (activeRole === 'admin') router.push('/admin/dashboard');
-        else if (activeRole === 'driver') router.push('/driver/dashboard');
-        else router.push('/dashboard');
-      }, 1000);
+      if (activeRole === "admin") router.replace("/admin/dashboard");
+      else if (activeRole === "driver") router.replace("/driver/dashboard");
+      else router.replace("/dashboard");
+
+      router.refresh();
     } catch (error: any) {
       const status = error.response?.status;
-      const message = error.response?.data?.message || 'Something went wrong';
+      const message = error.response?.data?.message || "Something went wrong";
 
       if (status === 429) {
-        toast.error('Too Many Attempts', {
-          description: message,
-        });
+        toast.error("Too Many Attempts", { description: message });
       } else if (status === 400) {
-        toast.error('Login Failed', {
-          description: message,
-        });
+        toast.error("Login Failed", { description: message });
       } else {
-        toast.error('Error', {
-          description: message,
-        });
+        toast.error("Error", { description: message });
       }
     } finally {
       setIsLoading(false);

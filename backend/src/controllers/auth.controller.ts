@@ -160,3 +160,25 @@ export const login = async (req: Request, res: Response) => {
       },
     });
 };
+
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (refreshToken) {
+      await prisma.refreshToken.deleteMany({
+        where: { token: refreshToken },
+      });
+    }
+
+    res
+      .clearCookie("accessToken")
+      .clearCookie("refreshToken")
+      .status(200)
+      .json({ message: "Logged out successfully" });
+  } catch (error) {
+    logger.error("Logout error", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+}

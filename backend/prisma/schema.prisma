@@ -7,56 +7,171 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  phone        String?   @unique
-  password     String?
-  googleId     String?  @unique
-  role         Role?
+  id                String  @id @default(uuid())
+  name              String
+  email             String  @unique
+  phone             String? @unique
+  password          String?
+  googleId          String? @unique
+  role              Role?
   isProfileComplete Boolean @default(false)
-  isActive     Boolean  @default(true)
+  isActive          Boolean @default(true)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  customerProfile   CustomerProfile?
-  driverProfile     DriverProfile?
-  wallet            Wallet?
-  refreshTokens     RefreshToken[]
-  passwordResetTokens  PasswordResetToken[] 
+  customerProfile     CustomerProfile?
+  driverProfile       DriverProfile?
+  wallet              Wallet?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+
+  ridesAsCustomer Ride[] @relation("CustomerRide")
+  ridesAsDriver   Ride[] @relation("DriverRide")
+
+  driverRatings   Rating[] @relation("DriverRating")
+  customerRatings Rating[] @relation("CustomerRating")
 }
 
 model CustomerProfile {
-  id        String  @id @default(uuid())
-  userId    String  @unique
-  userType  UserType @default(individual)
+  id       String   @id @default(uuid())
+  userId   String   @unique
+  userType UserType @default(individual)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DriverProfile {
-  id           String   @id @default(uuid())
-  userId       String   @unique
-  vehicleType  VehicleType
-  licenseNo    String?
-  isApproved   Boolean  @default(false)
-  rating       Float    @default(0)
-  totalTrips   Int      @default(0)
-  isOnline     Boolean  @default(false)
+  id          String      @id @default(uuid())
+  userId      String      @unique
+  vehicleType VehicleType
+  licenseNo   String?
+  isApproved  Boolean     @default(false)
+  rating      Float       @default(0)
+  totalTrips  Int         @default(0)
+  isOnline    Boolean     @default(false)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicles Vehicle[]
+  location DriverLocation?
+}
+
+model Ride {
+  id String @id @default(uuid())
+
+  customerId String
+  driverId   String?
+
+  vehicleType VehicleType
+
+  pickupLat Float
+  pickupLng Float
+  dropLat   Float
+  dropLng   Float
+
+  distanceKm  Float
+  price       Float
+
+  status RideStatus @default(requested)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cancelReason String?
+
+  customer User  @relation("CustomerRide", fields: [customerId], references: [id])
+  driver   User? @relation("DriverRide", fields: [driverId], references: [id])
+
+  payment Payment?
+  rating  Rating?
+
+  statusHistory RideStatusHistory[]
+  rideLocation  RideLocation?
+
+  @@index([customerId])
+  @@index([driverId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Vehicle {
+  id       String @id @default(uuid())
+  driverId String
+
+  type        VehicleType
+  model       String
+  plateNumber String
+  capacity    Int?
+
+  driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
+
+model DriverLocation {
+  id       String @id @default(uuid())
+  driverId String @unique
+
+  lat       Float
+  lng       Float
+  updatedAt DateTime @updatedAt
+
+  driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
+
+model RideStatusHistory {
+  id        String     @id @default(uuid())
+  rideId    String
+  status    RideStatus
+  createdAt DateTime   @default(now())
+
+  ride Ride @relation(fields: [rideId], references: [id])
+}
+
+model Payment {
+  id     String @id @default(uuid())
+  rideId String @unique
+
+  amount Float
+  method PaymentMethod
+  status PaymentStatus
+
+  createdAt DateTime @default(now())
+
+  ride Ride @relation(fields: [rideId], references: [id])
+}
+
+model SurgePricing {
+  id String @id @default(uuid())
+
+  city       String
+  multiplier Float
+
+  active    Boolean
+  startTime DateTime
+  endTime   DateTime
 }
 
 model Wallet {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  balance   Float    @default(0)
+  id      String @id @default(uuid())
+  userId  String @unique
+  balance Float  @default(0)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
 }
 
+model WalletTransaction {
+  id       String @id @default(uuid())
+  walletId String
+
+  amount Float
+  type   TransactionType
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
 
 model RefreshToken {
   id        String   @id @default(uuid())
@@ -78,6 +193,33 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Rating {
+  id String @id @default(uuid())
+
+  rideId     String @unique
+  driverId   String
+  customerId String
+
+  rating Int
+  review String?
+
+  createdAt DateTime @default(now())
+
+  ride     Ride @relation(fields: [rideId], references: [id])
+  driver   User @relation("DriverRating", fields: [driverId], references: [id])
+  customer User @relation("CustomerRating", fields: [customerId], references: [id])
+}
+
+model RideLocation {
+  id     String @id @default(uuid())
+  rideId String @unique
+
+  pickupAddress String
+  dropAddress   String
+
+  ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   customer
   driver
@@ -87,6 +229,33 @@ enum Role {
 enum UserType {
   individual
   business
+}
+
+enum RideStatus {
+  requested
+  driver_assigned
+  driver_arriving
+  ride_started
+  completed
+  cancelled
+}
+
+enum PaymentMethod {
+  wallet
+  card
+  cash
+  upi_driver
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+enum TransactionType {
+  credit
+  debit
 }
 
 enum VehicleType {

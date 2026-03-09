@@ -20,3 +20,8 @@ export const loginUser = async (
 };
 
 
+export const logoutUser = async (): Promise<BasicResponse> => {
+  const { data } = await api.post<BasicResponse>('/auth/logout');
+  return data;
+};
+

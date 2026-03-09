@@ -15,6 +15,7 @@ interface BookingState {
     pickup: LocationData;
     drop: LocationData;
     distance: number;
+    duration: number;
     packageDetails?: {
         weight: string;
         category: string;
@@ -45,6 +46,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
         pickup: null,
         drop: null,
         distance: 12.5,
+        duration: 25,
         selectedVehicle: null,
         price: 0,
         rideDetails: { passengers: 1 },
@@ -70,6 +72,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
             pickup: null,
             drop: null,
             distance: 12.5,
+            duration: 25,
             selectedVehicle: null,
             price: 0,
             rideDetails: { passengers: 1 },
