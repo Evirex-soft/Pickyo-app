@@ -16,3 +16,13 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const driverStatusLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20,
+  message: {
+    message: "Too many status updates. Try again later."
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

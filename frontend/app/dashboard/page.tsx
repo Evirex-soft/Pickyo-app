@@ -4,15 +4,15 @@ import DashboardHeader from "@/components/dashboard/customer/DashboardHeader";
 import RecentOrders from "@/components/dashboard/customer/RecentOrders";
 import StatsSection from "@/components/dashboard/customer/StatsSection";
 
-// Import Booking Components
 import { BookingProvider, useBooking } from "@/components/dashboard/booking/BookingContext";
 import ServiceSelector from "@/components/dashboard/booking/ServiceSelector";
 import BookingWizard from "@/components/dashboard/booking/BookingWizard";
 import GoogleMapsProvider from "@/components/GoogleMapsProvider";
 
-// Inner component to handle logic (since we need context)
+
+
 function DashboardContent() {
-    const { step } = useBooking();
+    const { step }: any = useBooking();
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -22,7 +22,7 @@ function DashboardContent() {
                 {step === 0 ? <ServiceSelector /> : <BookingWizard />}
             </section>
 
-            {/* 2. Dashboard Stats & History (Always visible below) */}
+            {/* 2. Dashboard Stats & History  */}
             <div className="space-y-12 border-t border-zinc-200 dark:border-zinc-800 pt-12">
                 <StatsSection />
                 <RecentOrders />
@@ -38,7 +38,6 @@ export default function DashboardPage() {
             <div className="relative z-10">
                 <DashboardHeader />
 
-                {/* Wrap content in provider */}
                 <BookingProvider>
                     <GoogleMapsProvider>
                         <DashboardContent />
@@ -47,7 +46,7 @@ export default function DashboardPage() {
 
                 <footer className="py-12 border-t border-zinc-200 dark:border-zinc-900 mt-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-lg">
                     <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center text-sm text-zinc-500">
-                        <p>&copy; 2024 LogiTech Inc. All rights reserved.</p>
+                        <p>&copy; 2026 Pickyo. All rights reserved.</p>
                         <div className="flex gap-6 mt-4 md:mt-0">
                             <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</a>
                             <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</a>

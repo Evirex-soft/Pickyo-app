@@ -17,11 +17,12 @@ import {
 import { Toaster, toast } from 'sonner';
 import { resetPasswordSchema } from '@/zod/registerSchema';
 import { resetPassword } from '@/services/user.service';
+import Spinner from '@/components/LoadingSpinner';
 
 export default function ResetPasswordPage() {
   return (
     <Suspense
-      fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
+      fallback={<div className="min-h-screen flex items-center justify-center"><Spinner /></div>}
     >
       <ResetPasswordContent />
       <Toaster position="top-right" richColors />

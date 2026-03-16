@@ -6,19 +6,19 @@ import { setCredentials } from "@/store/authSlice";
 import { getProfile } from "@/services/user.service";
 
 export default function AuthIntializer() {
-    const dispath = useDispatch();
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const initAuth = async () => {
             try {
                 const res = await getProfile();
-                dispath(setCredentials(res.user))
+                dispatch(setCredentials(res.user))
             } catch (error) {
 
             }
         };
         initAuth();
-    }, [dispath]);
+    }, [dispatch]);
 
     return null;
 }

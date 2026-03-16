@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes';
 import oauthRoutes from './routes/oauth.routes';
 import userRoutes from './routes/user.route';
 import rideRoutes from './routes/ride.route';
+import driverRoutes from './routes/driver.routes';
 import { logger } from './utils/logger';
 import { globalLimiter, authLimiter } from './middleware/rateLimit.middleware';
 
@@ -40,5 +41,6 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/oauth', oauthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rides', rideRoutes);
+app.use('/api/driver', driverRoutes);
 
 export default app;

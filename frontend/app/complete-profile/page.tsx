@@ -18,11 +18,12 @@ import {
 import { Toaster, toast } from 'sonner';
 import { completeUserProfile } from '@/services/user.service';
 import { completeProfileSchema } from '@/zod/registerSchema';
+import Spinner from '@/components/LoadingSpinner';
 
 export default function CompleteProfilePage() {
   return (
     <Suspense
-      fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
+      fallback={<div className="min-h-screen flex items-center justify-center"><Spinner /></div>}
     >
       <CompleteProfileContent />
       <Toaster position="top-right" richColors />
@@ -137,11 +138,10 @@ function CompleteProfileContent() {
                     key={role}
                     type="button"
                     onClick={() => setActiveRole(role as 'customer' | 'driver')}
-                    className={`flex-1 relative py-3 text-sm font-bold rounded-lg capitalize transition-all duration-200 ${
-                      activeRole === role
+                    className={`flex-1 relative py-3 text-sm font-bold rounded-lg capitalize transition-all duration-200 ${activeRole === role
                         ? 'text-slate-900 shadow-sm bg-white ring-1 ring-black/5'
                         : 'text-slate-500 hover:text-slate-700'
-                    }`}
+                      }`}
                   >
                     {role}
                   </button>
@@ -184,11 +184,10 @@ function CompleteProfileContent() {
                     <button
                       type="button"
                       onClick={() => setUserType('individual')}
-                      className={`flex flex-col items-center justify-center gap-2 py-4 border-2 rounded-xl transition-all ${
-                        userType === 'individual'
+                      className={`flex flex-col items-center justify-center gap-2 py-4 border-2 rounded-xl transition-all ${userType === 'individual'
                           ? `border-${theme.color}-600 bg-${theme.color}-50 text-${theme.color}-700`
                           : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
-                      }`}
+                        }`}
                     >
                       <User className="w-5 h-5" />
                       <span className="text-sm font-bold">Personal</span>
@@ -196,11 +195,10 @@ function CompleteProfileContent() {
                     <button
                       type="button"
                       onClick={() => setUserType('business')}
-                      className={`flex flex-col items-center justify-center gap-2 py-4 border-2 rounded-xl transition-all ${
-                        userType === 'business'
+                      className={`flex flex-col items-center justify-center gap-2 py-4 border-2 rounded-xl transition-all ${userType === 'business'
                           ? `border-${theme.color}-600 bg-${theme.color}-50 text-${theme.color}-700`
                           : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
-                      }`}
+                        }`}
                     >
                       <Building2 className="w-5 h-5" />
                       <span className="text-sm font-bold">Business</span>
@@ -229,11 +227,10 @@ function CompleteProfileContent() {
                         key={v.id}
                         onClick={() => setSelectedVehicle(v.id)}
                         className={`border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all h-24
-                                                    ${
-                                                      selectedVehicle === v.id
-                                                        ? 'border-emerald-500 bg-emerald-50 shadow-sm'
-                                                        : 'border-slate-200 hover:border-emerald-300 bg-white'
-                                                    }
+                                                    ${selectedVehicle === v.id
+                            ? 'border-emerald-500 bg-emerald-50 shadow-sm'
+                            : 'border-slate-200 hover:border-emerald-300 bg-white'
+                          }
                                                 `}
                       >
                         <v.icon

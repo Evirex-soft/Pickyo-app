@@ -12,14 +12,17 @@ import {
     Box
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Spinner from "@/components/LoadingSpinner";
 
 // Dynamic import with proper loading state
 const Map = dynamic(() => import("@/components/dashboard/customer/Map"), {
     ssr: false,
-    loading: () => <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 animate-pulse flex items-center justify-center text-xs text-zinc-400">Loading Map...</div>
+    loading: () => <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+        <Spinner />
+    </div>
 });
 
-// --- Mock Data ---
+// --- Mock Data ---a
 const ACTIVE_BOOKING = {
     id: "TRK-8829-XJ",
     status: "In Transit",

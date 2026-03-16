@@ -25,11 +25,12 @@ import { toast } from 'sonner';
 import { registerUser } from '@/services/auth.service';
 import { registerSchema } from '@/zod/registerSchema';
 import { redirectToGoogle } from '@/services/oauth.service';
+import Spinner from '@/components/LoadingSpinner';
 
 export default function RegisterPage() {
   return (
     <Suspense
-      fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
+      fallback={<div className="min-h-screen flex items-center justify-center"><Spinner /></div>}
     >
       <RegisterContent />
     </Suspense>

@@ -22,13 +22,14 @@ import { redirectToGoogle } from '@/services/oauth.service';
 import { loginUser } from '@/services/auth.service';
 import { loginSchema } from '@/zod/registerSchema';
 import { setCredentials } from '@/store/authSlice';
+import Spinner from '@/components/LoadingSpinner';
 
 
 // Wrap the main content in Suspense because we use useSearchParams
 export default function LoginPage() {
   return (
     <Suspense
-      fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}
+      fallback={<div className="min-h-screen flex items-center justify-center"><Spinner /></div>}
     >
       <LoginContent />
     </Suspense>
