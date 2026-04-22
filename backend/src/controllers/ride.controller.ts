@@ -3,6 +3,7 @@ import axios from "axios";
 import { prisma } from '../config/prisma';
 import { logger } from "../utils/logger";
 import { AuthRequest } from "../middleware/auth.middleware";
+import { getIO } from "../config/socket";
 
 export const estimateRideController = async (req: Request, res: Response) => {
     try {
@@ -112,8 +113,30 @@ export const createRideController = async (req: AuthRequest, res: Response) => {
                 dropLng: drop.lng,
                 distanceKm: distance,
                 price,
-                status: "requested"
+                status: "requested",
+                rideLocation: {
+                    create: {
+                        pickupAddress: pickup.address,
+                        dropAddress: drop.address,
+                    }
+                }
+            },
+            include: {
+                rideLocation: true
             }
+        });
+
+        const io = getIO();
+
+        const room = `drivers-${ride.vehicleType}`;
+        console.log("Emitting to room:", room);
+
+        io.to(room).emit("new-ride", {
+            id: ride.id,
+            price: ride.price,
+            distance: ride.distanceKm,
+            pickup: pickup,
+            drop: drop,
         });
 
         logger.info(`Ride ${ride.id} created by user ${req.user.userId}`);

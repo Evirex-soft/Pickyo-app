@@ -26,6 +26,7 @@ model User {
   wallet              Wallet?
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  savedPlaces         SavedPlace[]
 
   ridesAsCustomer Ride[] @relation("CustomerRide")
   ridesAsDriver   Ride[] @relation("DriverRide")
@@ -218,6 +219,21 @@ model RideLocation {
   dropAddress   String
 
   ride Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+}
+
+model SavedPlace {
+  id      String @id @default(uuid())
+  userId  String
+
+  label   String
+  address String
+  type    String 
+  lat     Float
+  lng     Float
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

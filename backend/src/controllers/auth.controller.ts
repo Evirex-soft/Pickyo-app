@@ -128,7 +128,6 @@ export const login = async (req: Request, res: Response) => {
   const accessToken = generateAccessToken(user.id, user.role!);
   const refreshToken = generateRefreshToken(user.id);
 
-  logger.info(`User logged in successfully: ${email}`);
   await prisma.refreshToken.create({
     data: {
       token: refreshToken,
@@ -136,6 +135,24 @@ export const login = async (req: Request, res: Response) => {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     },
   });
+
+  const fullUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isProfileComplete: true,
+      driverProfile: {
+        select: {
+          vehicleType: true,
+        },
+      },
+    },
+  });
+
+  logger.info(`User logged in successfully: ${email}`);
 
   res
     .cookie('accessToken', accessToken, {
@@ -153,11 +170,7 @@ export const login = async (req: Request, res: Response) => {
     .status(200)
     .json({
       message: 'Login successful',
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
+      user: fullUser,
     });
 };
 

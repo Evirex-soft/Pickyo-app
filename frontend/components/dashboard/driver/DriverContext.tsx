@@ -1,7 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect, } from "react";
+import { connectSocket, getSocket } from "@/socket/socket";
 import * as DriverService from "@/services/driver.service";
+import { useSelector } from "react-redux";
 
 export type DriverStatus = "offline" | "idle" | "request" | "pickup" | "trip";
 
@@ -35,63 +37,127 @@ export function DriverProvider({ children }: { children: ReactNode }) {
     const [earnings, setEarnings] = useState(1250);
     const [isLoading, setIsLoading] = useState(false);
 
-    const toggleOnline = async () => {
-        setIsLoading(true);
-        const newStatus = status === 'offline';
-        await DriverService.toggleDriverStatusAPI(newStatus);
+    const user = useSelector((state: any) => state.auth.user);
 
-        if (newStatus) {
-            setStatus('idle');
+    useEffect(() => {
+        let watchSocketId: number;
 
-            const rides: any = await DriverService.checkPendingRidesAPI();
+        const trackingStatuses = ['driver_assigned', 'driver_arriving', 'ride_started'];
+
+        if (trackingStatuses.includes(status) && currentRide) {
+            watchSocketId = navigator.geolocation.watchPosition((position) => {
+                const socket = getSocket();
+                if (socket) {
+                    socket.emit("update-location", {
+                        userId: currentRide.id,
+                        location: {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        }
+                    });
+                }
+            },
+                (err) => console.log("GPS Error:", err),
+                {
+                    enableHighAccuracy: true,
+                    distanceFilter: 10
+                })
+        }
+        return () => {
+            if (watchSocketId) navigator.geolocation.clearWatch(watchSocketId);
+        }
+    }, [status, currentRide]);
+
+    // Helper to reset to searching state
+    const resetToIdle = () => {
+        setStatus('idle');
+        setCurrentRide(null);
+    };
+
+    const checkPendingRide = async () => {
+        try {
+            const rides = await DriverService.checkPendingRidesAPI();
             if (rides.length > 0) {
                 setCurrentRide(rides[0]);
-                setStatus("request");
+                // Automatically set correct state based on ride status from backend
+                // (Assuming your API returns ride status)
+                const rideStatus = rides[0].status; // e.g., 'accepted', 'started'
+                if (rideStatus === 'started') setStatus('trip');
+                else if (rideStatus === 'accepted') setStatus('pickup');
+                else setStatus('request');
+            } else {
+                setStatus("idle");
             }
-        } else {
-            setStatus('offline');
-            setCurrentRide(null);
+        } catch (error) {
+            console.error("Error fetching rides", error);
         }
-        setIsLoading(false);
+    };
+
+    const toggleOnline = async () => {
+        setIsLoading(true);
+        try {
+            const isGoingOnline = status === 'offline';
+            await DriverService.toggleDriverStatusAPI(isGoingOnline);
+
+            if (isGoingOnline) {
+                const vehicleType = user?.driverProfile?.vehicleType;
+                if (!vehicleType) throw new Error("No vehicle found");
+
+                await checkPendingRide();
+                connectSocket(user.id, "driver", vehicleType);
+
+                const socket = getSocket();
+                socket.off("new-ride").on("new-ride", (ride) => {
+                    setCurrentRide(ride);
+                    setStatus("request");
+                    // Add Haptic feedback or sound here for real device
+                });
+            } else {
+                setStatus('offline');
+                setCurrentRide(null);
+                getSocket()?.disconnect();
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const acceptRide = async () => {
         if (!currentRide) return;
         setIsLoading(true);
-        await DriverService.acceptRideAPI(currentRide.id);
-        setStatus('pickup');
-        setIsLoading(false);
+        try {
+            await DriverService.acceptRideAPI(currentRide.id);
+            setStatus('pickup');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const rejectRide = async () => {
         if (!currentRide) return;
         setIsLoading(true);
-        await DriverService.rejectRideAPI(currentRide.id);
-        setStatus('idle');
-        setCurrentRide(null);
-        setIsLoading(false);
-
-        // Resume searching
-        const ride: any = await DriverService.checkPendingRidesAPI();
-        setCurrentRide(ride);
-        setStatus('request');
+        try {
+            await DriverService.rejectRideAPI(currentRide.id);
+            resetToIdle();
+            await checkPendingRide();
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const startTrip = async (otp: string) => {
         if (!currentRide) return false;
-
+        setIsLoading(true);
         try {
-            setIsLoading(true);
-
             const res = await DriverService.verifyOtpAPI(currentRide.id, otp);
-
             if (res?.ride) {
                 setStatus('trip');
                 return true;
             }
             return false;
         } catch (error) {
-            console.error("Error verifying OTP:", error);
             return false;
         } finally {
             setIsLoading(false);
@@ -101,16 +167,14 @@ export function DriverProvider({ children }: { children: ReactNode }) {
     const completeTrip = async () => {
         if (!currentRide) return;
         setIsLoading(true);
-        const res: any = await DriverService.completeTripAPI(currentRide.id);
-        setEarnings(e => e + res.earnings);
-        setStatus('idle');
-        setCurrentRide(null);
-        setIsLoading(false);
-
-        // Resume searching
-        const ride: any = await DriverService.checkPendingRidesAPI();
-        setCurrentRide(ride);
-        setStatus('request');
+        try {
+            const res: any = await DriverService.completeTripAPI(currentRide.id);
+            setEarnings(e => e + (res.earnings || 0));
+            resetToIdle();
+            await checkPendingRide();
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

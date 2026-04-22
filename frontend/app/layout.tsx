@@ -4,7 +4,10 @@ import './globals.css';
 import SmoothScroll from '@/components/providers/SmoothScroll';
 import { ReduxProvider } from '@/store/provider';
 import AuthIntializer from '@/components/AuthInitializer';
+import { DriverProvider } from '@/components/dashboard/driver/DriverContext';
+import { BookingProvider } from '@/components/dashboard/booking/BookingContext';
 import { Toaster } from 'sonner';
+
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -31,10 +34,16 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ReduxProvider>
           <AuthIntializer />
-          <SmoothScroll>
-            {children}
-            <Toaster position="top-right" richColors />
-          </SmoothScroll>
+
+          <DriverProvider>
+            <BookingProvider>
+              <SmoothScroll>
+                {children}
+                <Toaster position="top-right" richColors />
+              </SmoothScroll>
+            </BookingProvider>
+          </DriverProvider>
+
         </ReduxProvider>
       </body>
     </html>

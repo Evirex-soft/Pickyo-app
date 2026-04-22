@@ -135,8 +135,6 @@ function LoginContent() {
       if (activeRole === "admin") router.replace("/admin/dashboard");
       else if (activeRole === "driver") router.replace("/driver/dashboard");
       else router.replace("/dashboard");
-
-      router.refresh();
     } catch (error: any) {
       const status = error.response?.status;
       const message = error.response?.data?.message || "Something went wrong";

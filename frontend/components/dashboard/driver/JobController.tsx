@@ -100,7 +100,7 @@ export default function JobController() {
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center">
                             <span className="font-bold text-zinc-700 dark:text-zinc-300">
-                                {currentRide.passenger.charAt(0)}
+                                {currentRide?.passenger ? currentRide.passenger.charAt(0) : "?"}
                             </span>
                         </div>
                         <div>

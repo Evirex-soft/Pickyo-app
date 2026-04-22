@@ -224,6 +224,11 @@ export const getProfileController = async (req: AuthRequest, res: Response) => {
         email: true,
         role: true,
         isProfileComplete: true,
+        driverProfile: {
+          select: {
+            vehicleType: true,
+          },
+        },
         wallet: true,
       }
     });
@@ -237,5 +242,125 @@ export const getProfileController = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     logger.error('Error fetching user profile')
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+export const getTripsController = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const [trips, totalTrips] = await prisma.$transaction([
+      prisma.ride.findMany({
+        where: { customerId: req.user.userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          rideLocation: true,
+          payment: true,
+          driver: true
+        }
+      }),
+      prisma.ride.count({ where: { customerId: req.user.userId } }),
+    ]);
+
+    const totalPages = Math.ceil(totalTrips / limit);
+
+    logger.info(`Fetched trips for user ${req.user.userId} - Page ${page}`);
+    res.json({ trips, totalPages });
+  } catch (error) {
+    logger.error(`Error fetching trips for user ${req.user?.userId}: ${error}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+export const getSavedPlacesController = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" })
+    }
+
+    const places = await prisma.savedPlace.findMany({
+      where: { userId: req.user.userId },
+      orderBy: { createdAt: "desc" }
+    });
+    res.json(places);
+  } catch (error) {
+    logger.error("Error fetching places:", error);
+    res.status(500).json({ message: "Failed to fetch places" });
+  }
+};
+
+
+export const addSavedPlaceController = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { label, address, type, lat, lng } = req.body;
+
+    if (
+      !label ||
+      !address ||
+      !["home", "work", "other"].includes(type) ||
+      isNaN(parseFloat(lat)) ||
+      isNaN(parseFloat(lng))
+    ) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
+
+    const place = await prisma.savedPlace.create({
+      data: {
+        userId: req.user.userId,
+        label,
+        address,
+        type,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng)
+      }
+    });
+
+    res.json({ success: true, place })
+  } catch (error) {
+    logger.error("Error adding place:", error);
+    res.status(500).json({ message: "Failed to add place" })
+  }
+};
+
+export const deleteSavedPlaceController = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" })
+    }
+
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ message: "Invalid place id" });
+    }
+
+    const place = await prisma.savedPlace.findUnique({
+      where: { id }
+    });
+
+    if (!place || place.userId !== req.user.userId) {
+      return res.status(404).json({ message: "Place not found" })
+    }
+
+    await prisma.savedPlace.delete({ where: { id } });
+
+    res.json({ success: true })
+  } catch (error) {
+    logger.error("Error deleting place:", error);
+    res.status(500).json({ message: "Failed to delete place" })
   }
 };

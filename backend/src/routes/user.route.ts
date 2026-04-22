@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import {
+  addSavedPlaceController,
   completeProfileController,
+  deleteSavedPlaceController,
   forgotPasswordController,
   getProfileController,
+  getSavedPlacesController,
+  getTripsController,
   refreshTokenController,
   resetPasswordController,
 } from '../controllers/user.controller';
@@ -25,5 +29,17 @@ router.post('/reset-password', authLimiter, resetPasswordController);
 
 // Get profile
 router.get('/me', protect, getProfileController);
+
+// Get trips
+router.get('/trips', protect, getTripsController);
+
+// Get saved place
+router.get("/places", protect, getSavedPlacesController);
+
+// Add place
+router.post("/places", protect, addSavedPlaceController);
+
+// Delete place
+router.delete("/places/:id", protect, deleteSavedPlaceController);
 
 export default router;

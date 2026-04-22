@@ -2,8 +2,7 @@ import { Response } from "express";
 import { prisma } from '../config/prisma';
 import { AuthRequest } from "../middleware/auth.middleware";
 import { logger } from "../utils/logger";
-import { reverseGeocode } from "../service/geocode.service";
-import { add } from "winston";
+import { getIO } from "../config/socket";
 
 
 export const toggleDriverStatusController = async (req: AuthRequest, res: Response) => {
@@ -61,30 +60,24 @@ export const checkPendingRidesController = async (req: AuthRequest, res: Respons
 
         logger.info(`Driver ${req.user.userId} checked for pending rides, found ${rides.length}`);
 
-        const rideResponse = await Promise.all(
-            rides.map(async (ride) => {
-
-                const pickupAddress = await reverseGeocode(ride.pickupLat, ride.pickupLng);
-                const dropAddress = await reverseGeocode(ride.dropLat, ride.dropLng);
-
-                return {
-                    id: ride.id,
-                    price: ride.price,
-                    distance: ride.distanceKm,
-                    pickup: {
-                        address: pickupAddress,
-                        lat: ride.pickupLat,
-                        lng: ride.pickupLng
-                    },
-                    drop: {
-                        address: dropAddress,
-                        lat: ride.dropLat,
-                        lng: ride.dropLng,
-                    },
-                    passenger: ride.customer?.name,
-                }
-            })
-        )
+        const rideResponse = rides.map((ride) => {
+            return {
+                id: ride.id,
+                price: ride.price,
+                distance: ride.distanceKm,
+                pickup: {
+                    address: ride.rideLocation?.pickupAddress || "Unknown location",
+                    lat: Number(ride.pickupLat),
+                    lng: Number(ride.pickupLng)
+                },
+                drop: {
+                    address: ride.rideLocation?.dropAddress || "Unknown location",
+                    lat: Number(ride.dropLat),
+                    lng: Number(ride.dropLng),
+                },
+                passenger: ride.customer?.name,
+            };
+        });
 
         res.json(rideResponse);
     } catch (error) {
@@ -103,6 +96,13 @@ export const acceptRideController = async (req: AuthRequest, res: Response) => {
             data: {
                 driverId: req.user.userId,
                 status: "driver_assigned"
+            },
+            include: {
+                driver: {
+                    include: {
+                        driverProfile: true
+                    }
+                }
             }
         });
 
@@ -110,6 +110,20 @@ export const acceptRideController = async (req: AuthRequest, res: Response) => {
             data: {
                 rideId,
                 status: "driver_assigned"
+            }
+        });
+
+        const io = getIO();
+
+        io.to(`user-${ride.customerId}`).emit("ride-accepted", {
+            rideId: ride.id,
+            status: ride.status,
+            driver: {
+                name: ride.driver?.name,
+                phone: ride.driver?.phone,
+                vehicleType: ride.driver?.driverProfile?.vehicleType,
+                plate: ride.driver?.driverProfile?.licenseNo,
+                rating: ride.driver?.driverProfile?.rating
             }
         });
 
@@ -181,6 +195,11 @@ export const startRideController = async (req: AuthRequest, res: Response) => {
             }
         });
 
+        const io = getIO();
+        console.log("IO INSTANCE:", io);
+
+        io.to(`user-${ride.customerId}`).emit("ride-started");
+
         res.json({ ride: updatedRide });
 
     } catch (error) {
@@ -208,6 +227,10 @@ export const completeTripController = async (req: AuthRequest, res: Response) =>
                 status: "completed"
             }
         });
+
+        const io = getIO();
+
+        io.to(`user-${ride.customerId}`).emit("ride-completed");
 
         logger.info(`Ride ${rideId} completed by driver ${req.user.userId}`);
 

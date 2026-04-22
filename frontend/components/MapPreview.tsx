@@ -117,13 +117,13 @@ export default function MapPreview() {
         const bounds = new google.maps.LatLngBounds();
 
         bounds.extend({
-            lat: currentRide?.pickup.lat,
-            lng: currentRide?.pickup.lng
+            lat: currentRide?.pickup?.lat,
+            lng: currentRide?.pickup?.lng
         });
 
         bounds.extend({
-            lat: currentRide.drop.lat,
-            lng: currentRide?.drop.lng
+            lat: currentRide?.drop?.lat,
+            lng: currentRide?.drop?.lng
         });
 
         map.fitBounds(bounds);
