@@ -126,6 +126,31 @@ export const createRideController = async (req: AuthRequest, res: Response) => {
             }
         });
 
+        // Find drivers
+        const drivers = await prisma.driverProfile.findMany({
+            where: {
+                vehicleType: ride.vehicleType,
+            },
+            select: {
+                userId: true,
+                isOnline: true,
+                isApproved: true,
+                isBusy: true
+            }
+        });
+
+        // Create notifications
+        if (drivers.length > 0) {
+            await prisma.notification.createMany({
+                data: drivers.map((driver) => ({
+                    userId: driver.userId,
+                    title: "New Ride Request",
+                    message: `New ride available (${ride.distanceKm} km, ₹${ride.price})`,
+                    type: "ride_request"
+                }))
+            })
+        }
+
         const io = getIO();
 
         const room = `drivers-${ride.vehicleType}`;

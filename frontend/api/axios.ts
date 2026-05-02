@@ -25,9 +25,11 @@ api.interceptors.response.use(
         // Retry orignal request
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+        if (typeof window !== "undefined") {
+          // Clear any local storage if you use it
+          localStorage.clear();
+          // Hard redirect to login
+          window.location.replace('/login');
         }
         return Promise.reject(refreshError);
       }

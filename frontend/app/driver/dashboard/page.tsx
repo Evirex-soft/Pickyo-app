@@ -1,83 +1,81 @@
 "use client";
 
-import { DriverProvider, useDriver } from "@/components/dashboard/driver/DriverContext";
+import { useState } from "react";
+import { DriverProvider } from "@/components/dashboard/driver/DriverContext";
 import DashboardHeader from "@/components/dashboard/customer/DashboardHeader";
 import JobController from "@/components/dashboard/driver/JobController";
-import DriverStats from "@/components/dashboard/driver/DriverStats";
-import RecentTrips from "@/components/dashboard/driver/RecentTrips";
 import MapPreview from "@/components/MapPreview";
+import DriverSidebar from "@/components/dashboard/driver/DriverSidebar";
+import DriverRideHistory from "@/components/dashboard/driver/RideHistory";
+import DriverEarnings from "@/components/dashboard/driver/Earnings";
+import VehicleDetails from "@/components/dashboard/driver/VehicleDetails";
+import DriverDocuments from "@/components/dashboard/driver/DriverDocuments";
 
-function DashboardContent() {
-    const { status } = useDriver();
+function DashboardContent({ activeTab }: { activeTab: string }) {
+    const renderSection = () => {
+        switch (activeTab) {
+            case "dashboard":
+                return (
+                    <section className="h-full">
+                        {/* Map & Controller Container - Adjusted for responsiveness */}
+                        <div className="w-full min-h-[calc(100vh-12rem)] bg-white dark:bg-zinc-900 rounded-4xl md:rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
+                            {/* Controller first on desktop, Map first on mobile */}
+                            <div className="w-full h-100 md:h-auto md:w-100 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 order-2 md:order-1 flex flex-col">
+                                <JobController />
+                            </div>
+                            <div className="flex-1 min-h-75 order-1 md:order-2 relative">
+                                <MapPreview />
+                            </div>
+                        </div>
+                    </section>
+                );
+
+            case "history": return <DriverRideHistory />;
+            case "earnings": return <DriverEarnings />;
+            case "vehicle": return <VehicleDetails />;
+            case "documents": return <DriverDocuments />;
+
+            default:
+                return (
+                    <div className="py-20 text-center bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800">
+                        <h2 className="text-2xl font-bold capitalize">{activeTab}</h2>
+                        <p className="text-zinc-500">This module is currently under development.</p>
+                    </div>
+                );
+        }
+    };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-            {/* 1. Dynamic Driver Area (Map & Job Controller) */}
-            <section className="mb-20 min-h-125 flex flex-col items-center justify-center">
-
-                <div className="w-full h-[60dvh] min-h-125 max-h-175 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
-
-                    {/* Map Area */}
-                    <div className="w-full h-[40%] md:h-full md:flex-1 relative border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 order-1 md:order-2 bg-zinc-50 dark:bg-zinc-950">
-                        <MapPreview />
-
-                        {status !== "offline" && (
-                            <div className="absolute top-4 left-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg border border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
-                                <span className="relative flex h-3 w-3">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                                </span>
-                                <span className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
-                                    Online
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Job Controller Sidebar */}
-                    <div className="w-full h-[60%] md:h-full md:w-100 lg:w-112.5 flex flex-col bg-white dark:bg-zinc-900 order-2 md:order-1 relative z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] md:shadow-none">
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 flex flex-col justify-center">
-                            <JobController />
-                        </div>
-                    </div>
-
-                </div>
-
-            </section>
-
-            {/* 2. Dashboard Stats & History */}
-            <div className="space-y-12 border-t border-zinc-200 dark:border-zinc-800 pt-12">
-                <DriverStats />
-                <RecentTrips />
-            </div>
-
+        <div className="max-w-7xl mx-auto w-full">
+            {renderSection()}
         </div>
     );
 }
 
 export default function DriverDashboard() {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("dashboard");
+
     return (
-        <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
+        <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+            {/* Sidebar remains fixed */}
+            <DriverSidebar
+                isOpen={isSidebarOpen}
+                setIsOpen={setIsSidebarOpen}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            />
 
-            <div className="relative z-10">
-                <DashboardHeader />
+            {/* Main Content Area: Pushed right by lg:pl-72 on desktop */}
+            <div className="flex flex-col min-h-screen lg:pl-72 transition-all duration-300">
+                <DashboardHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
-                <DriverProvider>
-                    <DashboardContent />
-                </DriverProvider>
-
-                <footer className="py-12 border-t border-zinc-200 dark:border-zinc-900 mt-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-lg">
-                    <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center text-sm text-zinc-500">
-                        <p>&copy; 2026 Pickyo. All rights reserved.</p>
-                        <div className="flex gap-6 mt-4 md:mt-0">
-                            <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</a>
-                            <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</a>
-                        </div>
-                    </div>
-                </footer>
+                <div className="flex-1 p-4 sm:p-6 lg:p-8">
+                    <DriverProvider>
+                        <DashboardContent activeTab={activeTab} />
+                    </DriverProvider>
+                </div>
             </div>
-
         </main>
     );
 }

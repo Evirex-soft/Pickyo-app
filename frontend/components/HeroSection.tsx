@@ -1,243 +1,227 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { ArrowRight, MessageSquare, Phone, Search, Truck, User } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import { fadeInUp, staggerContainer, textReveal } from '@/components/animations';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Truck, Bike, Clock, Leaf, Box,
+  ArrowRight, Activity, Globe, ShieldCheck, Zap
+} from 'lucide-react';
 
-export default function HeroSection() {
+const FLEET = [
+  { id: 'express', name: 'Express', icon: Bike, cap: '20kg', speed: 'Ultra' },
+  { id: 'cargo', name: 'Cargo Pro', icon: Truck, cap: '500kg', speed: 'Fast' },
+  { id: 'heavy', name: 'Heavy', icon: Box, cap: '2.5 Tons', speed: 'Scheduled' },
+];
+
+export default function ResponsivePremiumHero() {
+  const [activeFleet, setActiveFleet] = useState('cargo');
+
   return (
-    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6 overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute -top-[30%] -right-[10%] w-200 h-200 rounded-full bg-linear-to-br from-indigo-100/50 to-purple-100/30 blur-3xl" />
-        <div className="absolute top-[20%] -left-[10%] w-150 h-150 rounded-full bg-linear-to-tr from-blue-100/40 to-emerald-50/30 blur-3xl" />
-      </div>
+    <section className="relative w-full min-h-screen bg-white flex flex-col overflow-x-hidden">
+      {/* Background Tech Grid - Scaled for high DPI */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: 'clamp(30px, 5vw, 50px) clamp(30px, 5vw, 50px)' }} />
 
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-        {/* Left: Text Content */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-          className="space-y-8"
-        >
-          {/* Badge */}
-          <motion.div
-            variants={fadeInUp}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 text-sm font-medium"
-          >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            Active in 12 Major Cities
-          </motion.div>
+      <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-24 pb-12 lg:pt-32 lg:pb-20">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
-          {/* GSAP-style Text Reveal Headline */}
-          <div className="overflow-hidden">
-            <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
-              <div className="overflow-hidden block">
-                <motion.span variants={textReveal} className="block">
-                  Logistics for the
-                </motion.span>
+          {/* --- LEFT SIDE: THE PITCH --- */}
+          <div className="lg:col-span-6 xl:col-span-7 space-y-6 sm:space-y-8 text-center lg:text-left">
+
+            {/* Status Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-slate-600 text-[10px] sm:text-xs font-bold tracking-widest uppercase mx-auto lg:mx-0"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Network Active: 124 Drivers Nearby
+            </motion.div>
+
+            {/* Headline: Uses Fluid Typography */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-[2.75rem] sm:text-6xl md:text-7xl xl:text-8xl font-black text-slate-900 leading-[0.95] tracking-tight"
+            >
+              The <span className="text-indigo-600">OS</span> for <br className="hidden sm:block" />
+              Modern Cargo.
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-lg sm:text-xl text-slate-500 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium"
+            >
+              Deploy your logistics infrastructure in seconds. From urban bike couriers to heavy freight, manage it all through one interface.
+            </motion.p>
+
+            {/* Buttons: Stack on mobile, side-by-side on tablet/desktop */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-4"
+            >
+              <button className="h-14 sm:h-16 px-8 sm:px-10 bg-slate-900 text-white rounded-full font-bold text-base sm:text-lg hover:bg-indigo-600 transition-all shadow-xl hover:shadow-indigo-100 flex items-center justify-center gap-3 group">
+                Start Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button className="h-14 sm:h-16 px-8 sm:px-10 bg-white border-2 border-slate-200 text-slate-900 rounded-full font-bold text-base sm:text-lg hover:border-slate-900 transition-all">
+                Earn With US
+              </button>
+            </motion.div>
+
+            {/* Trust Indicators: Only show prominently on larger screens */}
+            <div className="pt-8 grid grid-cols-2 md:grid-cols-3 gap-6 border-t border-slate-100 opacity-60">
+              <div className="flex items-center gap-2 text-slate-600 font-bold text-[10px] uppercase tracking-tighter">
+                <ShieldCheck className="w-4 h-4 text-indigo-500" /> Fully Insured
               </div>
-              <div className="overflow-hidden block">
-                <motion.span
-                  variants={textReveal}
-                  className="block text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-blue-500"
-                >
-                  Modern Age.
-                </motion.span>
+              <div className="flex items-center gap-2 text-slate-600 font-bold text-[10px] uppercase tracking-tighter">
+                <Globe className="w-4 h-4 text-indigo-500" /> Global Network
               </div>
-            </h1>
-          </div>
-
-          <motion.p variants={fadeInUp} className="text-xl text-slate-500 max-w-lg leading-relaxed">
-            Pickyo connects you with the nearest truck or bike driver in seconds. The Uber for cargo
-            is finally here.
-          </motion.p>
-
-          <motion.div variants={fadeInUp} className="flex flex-wrap gap-4">
-            <Link href="/booking">
-              <Button className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-200/50 transition-all hover:scale-105 rounded-full">
-                Book a Truck <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <Link href="/driver">
-              <Button
-                variant="outline"
-                className="h-14 px-8 text-lg bg-white border-slate-200 hover:bg-slate-50 text-slate-700 rounded-full"
-              >
-                Earn with Pickyo
-              </Button>
-            </Link>
-          </motion.div>
-        </motion.div>
-
-        {/* Right: Visual/Abstract Graphic */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative lg:h-150 w-full flex items-center justify-center perspective-1000"
-        >
-          {/* THE PHONE CONTAINER */}
-          <div
-            className="relative
-    w-[min(80vw,360px)]
-    sm:w-[min(70vw,390px)]
-    lg:w-95
-    aspect-9/16
-    bg-slate-900
-    rounded-[2.8rem]
-    p-4
-    shadow-2xl
-    border-4
-    border-slate-800
-    ring-1
-    ring-slate-900/50
-    transform
-    -rotate-6
-    hover:rotate-0
-    transition-transform
-    duration-700
-    ease-out
-    z-20"
-          >
-            {/* Dynamic Island / Notch */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-slate-950 rounded-b-xl z-50"></div>
-
-            {/* Screen Content */}
-            <div className="w-full h-full bg-slate-50 rounded-4xl overflow-hidden relative flex flex-col">
-              {/* --- MAP LAYER --- */}
-              <div className="absolute inset-0 z-0">
-                {/* 1. Map Base & Grid */}
-                <div className="absolute inset-0 bg-[#F3F4F6]"></div>
-                <div
-                  className="absolute inset-0 opacity-30"
-                  style={{
-                    backgroundImage:
-                      'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(to right, #cbd5e1 1px, transparent 1px)',
-                    backgroundSize: '30px 30px',
-                  }}
-                ></div>
-
-                {/* 2. Green Zones (Parks) */}
-                <div className="absolute top-16 -left-5 w-32 h-32 bg-emerald-100/60 rounded-full blur-xl"></div>
-                <div className="absolute bottom-32 -right-5 w-40 h-40 bg-emerald-100/60 rounded-full blur-xl"></div>
-
-                {/* 3. SVG Route Path */}
-                <svg
-                  className="absolute inset-0 w-full h-full"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                >
-                  {/* 
-                   Path Coordinates: 
-                   Start: 20% Left, 85% Top
-                   Curve: via 50% Left, 50% Top
-                   End: 80% Left, 20% Top 
-                */}
-                  <motion.path
-                    d="M 20 85 Q 50 50 80 20"
-                    fill="transparent"
-                    strokeWidth="3"
-                    stroke="#3b82f6"
-                    strokeLinecap="round"
-                    strokeDasharray="4 4"
-                    initial={{ pathLength: 0, opacity: 0.5 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
-                  />
-
-                  {/* Destination Pin Pulse */}
-                  <circle cx="80" cy="20" r="3" fill="#ef4444" />
-                </svg>
-
-                {/* 4. Moving Truck Animation */}
-                <motion.div
-                  className="absolute w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center shadow-lg z-10 text-white ring-2 ring-white"
-                  // Animate Top and Left to follow the SVG path curve (approximate)
-                  animate={{
-                    left: ['20%', '50%', '80%'],
-                    top: ['85%', '50%', '20%'],
-                  }}
-                  transition={{
-                    duration: 4,
-                    ease: 'easeInOut',
-                    repeat: Infinity,
-                    repeatDelay: 1,
-                  }}
-                >
-                  <Truck className="w-4 h-4 fill-current" />
-                </motion.div>
-              </div>
-
-              {/* --- UI OVERLAY LAYER --- */}
-              <div className="relative z-10 h-full flex flex-col justify-between pointer-events-none">
-                {/* Top: Compact Search */}
-                <div className="pt-10 px-4">
-                  <div className="bg-white/90 backdrop-blur-sm shadow-sm rounded-full py-2 px-3 flex items-center gap-2 border border-white/60">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    <div className="flex-1 text-[10px] text-slate-500 font-medium">
-                      Tracking Order #2891
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom: Compact Driver Sheet */}
-                <div className="p-3 pb-5 pt-8 bg-linear-to-t from-white via-white/80 to-transparent">
-                  <div className="bg-white rounded-2xl p-4 shadow-xl border border-slate-100 pointer-events-auto">
-                    {/* Handle */}
-                    <div className="w-8 h-1 bg-slate-200 rounded-full mx-auto mb-3"></div>
-
-                    {/* Driver Row */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="relative">
-                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 text-slate-500">
-                          {/* DRIVER ICON */}
-                          <User className="w-5 h-5" />
-                        </div>
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center shadow-sm border border-white">
-                          <span className="text-[8px] font-bold text-yellow-900">★</span>
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-bold text-slate-900 leading-tight">Mike R.</h4>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] font-medium text-slate-600">
-                            Volvo FH
-                          </span>
-                          <span className="text-[10px] text-slate-400">· KL-07-29</span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold text-slate-900">2 min</div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <button className="flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors">
-                        <MessageSquare className="w-3 h-3" /> Chat
-                      </button>
-                      <button className="flex items-center justify-center gap-2 py-2 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors">
-                        <Phone className="w-3 h-3" /> Call
-                      </button>
-                    </div>
-                  </div>
-                </div>
+              <div className="items-center gap-2 text-slate-600 font-bold text-[10px] uppercase tracking-tighter hidden md:flex">
+                <Zap className="w-4 h-4 text-indigo-500" /> Instant Quote
               </div>
             </div>
           </div>
 
-          {/* Background Decor Elements */}
-          <div className="absolute -z-10 top-1/2 right-4 w-56 h-56 bg-indigo-400 rounded-full blur-[80px] opacity-20" />
-          <div className="absolute -z-10 bottom-0 left-4 w-64 h-64 bg-emerald-400 rounded-full blur-[80px] opacity-20" />
-        </motion.div>
+          {/* RIGHT SIDE  */}
+          <div className="lg:col-span-6 xl:col-span-5 relative w-full max-w-125 lg:max-w-none mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="relative aspect-square sm:aspect-4/5 lg:aspect-square xl:aspect-10/11 bg-slate-50 rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-200 shadow-2xl overflow-hidden"
+            >
+              {/* Map Layer */}
+              <div
+                className="absolute inset-0 grayscale opacity-40 mix-blend-multiply"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop')`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              />
+
+              {/* Technical SVG Route - Fixed with ViewBox and Numerical Coordinates */}
+              <svg className="absolute inset-0 w-full h-full p-8 sm:p-12 overflow-visible" viewBox="0 0 100 100">
+                {/* 1. Static background line (The Path) */}
+                <path
+                  d="M 20 80 Q 50 75, 80 20"
+                  stroke="#e2e8f0"
+                  strokeWidth="1"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+
+                {/* 2. The Animated Connection (Moving Dashes) */}
+                <motion.path
+                  d="M 20 80 Q 50 75, 80 20"
+                  stroke="#4f46e5"
+                  strokeWidth="1.5"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray="4 8" // 4px dash, 8px gap
+                  animate={{ strokeDashoffset: [24, 0] }} // Animates the dash offset
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+
+                {/* 3. Start Node (Pickup) */}
+                <circle cx="20" cy="80" r="2.5" className="fill-white stroke-indigo-600 stroke-[0.8]" />
+
+                {/* 4. End Node (Destination) with Pulse */}
+                <motion.circle
+                  cx="80" cy="20" r="3"
+                  className="fill-white stroke-emerald-500 stroke-[0.8]"
+                  animate={{ r: [3, 4.5, 3], strokeWidth: [0.8, 1.5, 0.8] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              </svg>
+
+              {/* HUD Elements */}
+              <div className="absolute inset-0 p-4 sm:p-8 flex flex-col justify-between pointer-events-none">
+                {/* Top Overlay */}
+                <div className="flex justify-between items-start">
+                  <div className="bg-white/90 backdrop-blur-md border border-slate-200 p-3 sm:p-4 rounded-2xl shadow-lg pointer-events-auto">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-900 flex items-center justify-center text-white">
+                        <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Network Pulse</p>
+                        <p className="text-xs sm:text-sm font-bold text-slate-900">Optimization: 98%</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Overlay: Fleet Selector */}
+                <div className="bg-white/95 backdrop-blur-2xl border border-white p-4 sm:p-6 rounded-4xl sm:rounded-[2.5rem] shadow-2xl pointer-events-auto">
+                  <div className="flex items-center justify-between mb-4 px-1">
+                    <h3 className="font-bold text-slate-900 uppercase text-[10px] tracking-widest">Live Fleet</h3>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Tracking Active</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {FLEET.map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => setActiveFleet(f.id)}
+                        className={`flex flex-col items-center gap-2 p-3 sm:p-4 rounded-2xl sm:rounded-3xl transition-all border ${activeFleet === f.id
+                          ? 'bg-slate-900 border-slate-900 text-white shadow-xl lg:-translate-y-1'
+                          : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'
+                          }`}
+                      >
+                        <f.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <div className="text-center">
+                          <p className="text-[9px] font-bold uppercase mb-0.5">{f.name}</p>
+                          <p className="text-[8px] font-bold opacity-60">{f.cap}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Floating Info Tag */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+              className="absolute -right-4 sm:-right-8 top-[15%] bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 shadow-2xl  items-center gap-3 z-20 hidden sm:flex"
+            >
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div>
+                <p className="text-[9px] font-bold text-slate-400 uppercase">Avg. Pickup</p>
+                <p className="text-xs sm:text-sm font-black text-slate-900">12 MINS</p>
+              </div>
+            </motion.div>
+          </div>
+
+        </div>
       </div>
+
+      {/* Footer Logo Strip: Marquee or Flex strip */}
+      {/* <div className="mt-auto py-8 sm:py-12 border-t border-slate-100 bg-slate-50/50">
+        <div className="max-w-7xl mx-auto px-6 overflow-hidden">
+          <div className="flex flex-wrap justify-center sm:justify-between items-center gap-8 sm:gap-4 opacity-30 grayscale filter contrast-125">
+            {['LOGITECH', 'AMAZON FREIGHT', 'DHL GLOBAL', 'FEDEX PRO', 'MAERSK'].map((brand) => (
+              <span key={brand} className="font-black text-sm sm:text-lg lg:text-xl tracking-tighter shrink-0">{brand}</span>
+            ))}
+          </div>
+        </div>
+      </div> */}
     </section>
   );
 }

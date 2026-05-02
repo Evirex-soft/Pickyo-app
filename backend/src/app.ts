@@ -11,10 +11,14 @@ import userRoutes from './routes/user.route';
 import rideRoutes from './routes/ride.route';
 import driverRoutes from './routes/driver.routes';
 import walletRoutes from './routes/wallet.route';
+import notificationRoutes from './routes/notification.route';
 import { logger } from './utils/logger';
 import { globalLimiter, authLimiter } from './middleware/rateLimit.middleware';
 
 const app = express();
+
+// Serve static files
+app.use('/uploads', express.static('uploads'));
 
 app.use(
   cors({
@@ -44,5 +48,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/rides', rideRoutes);
 app.use('/api/driver', driverRoutes);
 app.use('/api/wallet', walletRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 export default app;

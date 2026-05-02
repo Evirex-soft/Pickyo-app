@@ -26,15 +26,19 @@ export async function proxy(req: NextRequest) {
             }
 
             // driver trying to access customer dashboard
-            if (pathname.startsWith("/dashboard") && role !== "customer") {
+            if (pathname.startsWith("/dashboard") && !pathname.startsWith("/driver") && role !== "customer") {
                 return NextResponse.redirect(new URL("/driver/dashboard", req.url));
             }
+            return NextResponse.next();
         }
 
-        return NextResponse.next();
-    } catch (error) {
-        // Access token invalid but refresh token exists
         if (refreshToken) {
+            return NextResponse.next();
+        }
+
+    } catch (error: any) {
+
+        if (error.code === 'ERR_JWT_EXPIRED' && refreshToken) {
             return NextResponse.next();
         }
 
@@ -43,6 +47,10 @@ export async function proxy(req: NextRequest) {
         res.cookies.delete("refreshToken");
         return res;
     }
+
+    return NextResponse.next();
+
+
 }
 
 export const config = {

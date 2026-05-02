@@ -27,6 +27,7 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   savedPlaces         SavedPlace[]
+  Notification        Notification[]
 
   ridesAsCustomer Ride[] @relation("CustomerRide")
   ridesAsDriver   Ride[] @relation("DriverRide")
@@ -46,15 +47,26 @@ model CustomerProfile {
 model DriverProfile {
   id          String      @id @default(uuid())
   userId      String      @unique
+
   vehicleType VehicleType
   licenseNo   String?
+  licenseExpiry DateTime?
+  licenseDocumentUrl  String?
+
   isApproved  Boolean     @default(false)
+  rejectionReason String?
+
   rating      Float       @default(0)
   totalTrips  Int         @default(0)
+
   isOnline    Boolean     @default(false)
+  isBusy      Boolean     @default(false)
+
+  lastSeen    DateTime?
 
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   vehicles Vehicle[]
+  documents DriverDocument[]
   location DriverLocation?
 }
 
@@ -102,8 +114,14 @@ model Vehicle {
 
   type        VehicleType
   model       String
+  brand       String?
   plateNumber String
   capacity    Int?
+
+  color       String?
+  year        Int?
+
+  isVerified  Boolean @default(false)
 
   driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
@@ -115,6 +133,21 @@ model DriverLocation {
   lat       Float
   lng       Float
   updatedAt DateTime @updatedAt
+
+  driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
+
+model DriverDocument {
+  id       String @id @default(uuid())
+  driverId String
+
+  type DocumentType
+  url  String
+
+  expiryDate DateTime?
+  isVerified Boolean @default(false)
+
+  createdAt DateTime @default(now())
 
   driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
 }
@@ -236,6 +269,22 @@ model SavedPlace {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+
+  title     String
+  message   String
+  type      NotificationType
+
+  isRead    Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
 enum Role {
   customer
   driver
@@ -261,6 +310,23 @@ enum PaymentMethod {
   card
   cash
   upi_driver
+}
+
+enum NotificationType {
+  ride_request
+  ride_update
+  document_status
+  payment
+  general
+}
+
+
+enum DocumentType {
+  license
+  rc
+  insurance
+  pollution
+  aadhaar
 }
 
 enum PaymentStatus {

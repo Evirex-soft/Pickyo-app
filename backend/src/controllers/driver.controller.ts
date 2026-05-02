@@ -3,6 +3,7 @@ import { prisma } from '../config/prisma';
 import { AuthRequest } from "../middleware/auth.middleware";
 import { logger } from "../utils/logger";
 import { getIO } from "../config/socket";
+import { RideStatus } from "@prisma/client";
 
 
 export const toggleDriverStatusController = async (req: AuthRequest, res: Response) => {
@@ -113,6 +114,15 @@ export const acceptRideController = async (req: AuthRequest, res: Response) => {
             }
         });
 
+        await prisma.notification.create({
+            data: {
+                userId: ride.customerId,
+                title: "Ride Accepted",
+                message: "Your driver is on the way 🚗",
+                type: "ride_update"
+            }
+        });
+
         const io = getIO();
 
         io.to(`user-${ride.customerId}`).emit("ride-accepted", {
@@ -195,6 +205,15 @@ export const startRideController = async (req: AuthRequest, res: Response) => {
             }
         });
 
+        await prisma.notification.create({
+            data: {
+                userId: ride.customerId,
+                title: "Ride Started",
+                message: "Your trip has started",
+                type: "ride_update"
+            }
+        });
+
         const io = getIO();
         console.log("IO INSTANCE:", io);
 
@@ -228,6 +247,15 @@ export const completeTripController = async (req: AuthRequest, res: Response) =>
             }
         });
 
+        await prisma.notification.create({
+            data: {
+                userId: ride.customerId,
+                title: "Ride Completed",
+                message: "Your ride is completed successfully",
+                type: "ride_update"
+            }
+        });
+
         const io = getIO();
 
         io.to(`user-${ride.customerId}`).emit("ride-completed");
@@ -242,5 +270,207 @@ export const completeTripController = async (req: AuthRequest, res: Response) =>
     } catch (error) {
         logger.error("Error completing ride", error);
         res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+export const getDriverTripsController = async (req: AuthRequest, res: Response) => {
+    try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        const whereCondition = {
+            driverId: req.user.userId,
+            status: RideStatus.completed
+        };
+
+        const [trips, totalTrips] = await prisma.$transaction([
+            prisma.ride.findMany({
+                where: whereCondition,
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+                include: {
+                    rideLocation: true,
+                    payment: true,
+                    customer: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            phone: true
+                        }
+                    }
+                }
+            }),
+            prisma.ride.count({ where: whereCondition }),
+        ]);
+
+        const totalPages = Math.ceil(totalTrips / limit);
+
+        logger.info(`Fetched trips for driver ${req.user.userId} - Page ${page}`);
+        res.json({ trips, totalPages });
+    } catch (error) {
+        logger.error(`Error fetching trips for driver ${req.user?.userId}: ${error}`);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+export const getDriverProfileController = async (req: AuthRequest, res: Response) => {
+    try {
+        const driverId = req.user.userId;
+
+        const driverProfile = await prisma.driverProfile.findUnique({
+            where: { userId: driverId },
+            include: {
+                vehicles: true,
+                documents: true,
+            }
+        });
+        if (!driverProfile) {
+            return res.status(404).json({ message: "Driver profile not found" });
+        }
+
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+        const updatedDocuments = driverProfile.documents.map((doc) => ({
+            ...doc,
+            url: doc.url ? `${baseUrl}/${doc.url.replace(/\\/g, '/')}` : null
+        }));
+
+        const updatedProfile = {
+            ...driverProfile,
+            documents: updatedDocuments
+        };
+
+        logger.info(`Fetched profile for driver ${driverId}`);
+        res.json({ driverProfile: updatedProfile });
+    } catch (error) {
+        logger.error(`Error fetching profile for driver ${req.user?.userId}: ${error}`);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+export const uploadDriverDocumentController = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user.userId;
+
+        if (!req.file) {
+            return res.status(400).json({ message: "File is required" });
+        }
+
+        const { type, expiryDate } = req.body || {};
+
+        if (!type) {
+            return res.status(400).json({ message: "Document type is required" });
+        }
+
+        const driver = await prisma.driverProfile.findUnique({
+            where: { userId }
+        });
+
+        if (!driver) {
+            return res.status(404).json({ message: "Driver profile not found" });
+        };
+
+        const document = await prisma.driverDocument.create({
+            data: {
+                driverId: driver.id,
+                type,
+                url: req.file.path,
+                expiryDate: expiryDate ? new Date(expiryDate) : null,
+            },
+        });
+
+        res.json(document);
+    } catch (error) {
+        logger.error(`Error uploading document for driver ${req.user?.userId}: ${error}`);
+        res.status(500).json({ message: "Upload failed" });
+    }
+};
+
+export const updateVehicleController = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user.userId;
+        const { model, licenseNo, vehicleType, color } = req.body;
+
+        const driver = await prisma.driverProfile.findUnique({
+            where: { userId }
+        });
+
+        if (!driver) {
+            return res.status(404).json({ message: "Driver profile not found" })
+        };
+
+        const existingVehicle = await prisma.vehicle.findFirst({
+            where: { driverId: driver.id }
+        });
+
+        let vehicle;
+
+        if (existingVehicle) {
+            vehicle = await prisma.vehicle.update({
+                where: { id: existingVehicle.id },
+                data: {
+                    model,
+                    plateNumber: licenseNo,
+                    color,
+                    type: vehicleType,
+                },
+            });
+        } else {
+            vehicle = await prisma.vehicle.create({
+                data: {
+                    driverId: driver.id,
+                    model,
+                    plateNumber: licenseNo,
+                    color,
+                    type: vehicleType,
+                },
+            });
+        }
+
+        res.json(vehicle);
+    } catch (error) {
+        logger.error(`Error updating vehicle for driver ${req.user?.userId}: ${error}`);
+        res.status(500).json({ message: "Update failed" });
+    }
+};
+
+export const deleteDriverDocumentController = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user.userId;
+        const documentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+        const driver = await prisma.driverProfile.findUnique({
+            where: { userId }
+        });
+
+        if (!driver) {
+            return res.status(404).json({ message: "Driver not found" })
+        };
+
+        const document = await prisma.driverDocument.findFirst({
+            where: {
+                id: documentId,
+                driverId: driver.id
+            },
+        });
+
+        if (!document) {
+            return res.status(404).json({ message: "Document not found" });
+        }
+
+        await prisma.driverDocument.delete({
+            where: { id: document.id }
+        });
+
+        res.json({ message: "Document deleted successfully" });
+    } catch (error) {
+        logger.error(`Error deleting document for driver ${req.user?.userId}: ${error}`);
+        res.status(500).json({ message: "Delete failed" });
     }
 };
