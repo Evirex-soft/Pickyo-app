@@ -59,7 +59,7 @@ export default function JobController() {
                 <div className="flex justify-between items-start mb-6 pt-2">
                     <div>
                         <p className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Est. Earnings</p>
-                        <h2 className="text-4xl font-black text-green-400">₹{currentRide.price}</h2>
+                        <h2 className="text-4xl font-black text-green-400">₹{currentRide.driverEarning}</h2>
                     </div>
                     <div className="text-right bg-zinc-800 px-3 py-1.5 rounded-lg">
                         <div className="text-lg font-bold">{currentRide.distance} km</div>
@@ -158,7 +158,7 @@ export default function JobController() {
                             disabled={isLoading}
                             className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-[0_4px_14px_rgba(239,68,68,0.4)] transition-colors disabled:opacity-50"
                         >
-                            Complete Trip & Collect ₹{currentRide.price}
+                            Complete Trip & Collect ₹{currentRide.driverEarning}
                         </button>
                     )}
                 </div>

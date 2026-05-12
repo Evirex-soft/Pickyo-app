@@ -13,6 +13,7 @@ interface RideRequest {
     drop: { address: string; lat: number; lng: number; };
     distance: number;
     price: number;
+    driverEarning: number;
     passenger: string;
     rating: number;
 }

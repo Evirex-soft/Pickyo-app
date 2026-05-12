@@ -99,6 +99,8 @@ model Ride {
   payment Payment?
   rating  Rating?
 
+  dispute Dispute?
+
   statusHistory RideStatusHistory[]
   rideLocation  RideLocation?
 
@@ -166,6 +168,10 @@ model Payment {
   rideId String @unique
 
   amount Float
+
+  adminCommission   Float
+  driverEarning     Float
+  
   method PaymentMethod
   status PaymentStatus
 
@@ -284,6 +290,79 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Dispute {
+  id          String        @id @default(uuid())
+  rideId      String        @unique
+  ride        Ride          @relation(fields: [rideId], references: [id])
+  
+  raisedBy    String        // "customer" or "driver"
+  reason      String
+  description String?
+  
+  status      DisputeStatus @default(pending)
+  priority    Priority      @default(medium)
+  
+  amount      Float?        // Disputed amount
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model PromoCode {
+  id            String      @id @default(uuid())
+  code          String      @unique // e.g., "WELCOME20"
+  description   String?
+  
+  discountType  DiscountType @default(percentage)
+  discountValue Float       // 20 for 20% or 100 for ₹100
+  
+  minPrice      Float       @default(0)    // Minimum ride fare to apply
+  maxDiscount   Float?      // Cap for percentage discounts
+  
+  usageLimit    Int         @default(100)  // Max total uses
+  usedCount     Int         @default(0)
+  
+  expiryDate    DateTime
+  isActive      Boolean     @default(true)
+  
+  createdAt     DateTime    @default(now())
+}
+
+model GeoZone {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  description   String?
+  
+  // Coordinates for the center of the zone
+  centerLat     Float
+  centerLng     Float
+  radiusKm      Float    @default(5) 
+  
+  isActive      Boolean  @default(true)
+  surgeEnabled  Boolean  @default(false)
+  baseMultiplier Float   @default(1.0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  adminId     String
+  adminName   String   // Snapshot for quick viewing
+  
+  action      String   // e.g., "PROMO_CREATED", "DRIVER_BLOCKED", "SURGE_UPDATED"
+  entity      String   // e.g., "PromoCode", "DriverProfile", "SystemSetting"
+  entityId    String?
+  
+  oldValue    Json?    // State before change
+  newValue    Json?    // State after change
+  
+  ipAddress   String?
+  severity    String   @default("info") // info, warning, critical
+
+  createdAt   DateTime @default(now())
+}
 
 enum Role {
   customer
@@ -320,6 +399,24 @@ enum NotificationType {
   general
 }
 
+enum DisputeStatus {
+  pending
+  under_review
+  resolved
+  refunded
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum DiscountType {
+  percentage
+  flat
+}
 
 enum DocumentType {
   license

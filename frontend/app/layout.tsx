@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import SmoothScroll from '@/components/providers/SmoothScroll';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
 import { ReduxProvider } from '@/store/provider';
 import AuthIntializer from '@/components/AuthInitializer';
 import { DriverProvider } from '@/components/dashboard/driver/DriverContext';
@@ -37,10 +37,10 @@ export default function RootLayout({
 
           <DriverProvider>
             <BookingProvider>
-              <SmoothScroll>
+              <LayoutWrapper>
                 {children}
                 <Toaster position="top-right" richColors />
-              </SmoothScroll>
+              </LayoutWrapper>
             </BookingProvider>
           </DriverProvider>
 

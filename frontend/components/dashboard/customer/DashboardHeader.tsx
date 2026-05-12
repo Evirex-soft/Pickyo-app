@@ -225,7 +225,7 @@ export default function DashboardHeader({ onMenuClick }: HeaderProps) {
                                                             <p className={`text-sm leading-tight ${!n.isRead ? 'font-bold text-zinc-900 dark:text-white' : 'font-medium text-zinc-600 dark:text-zinc-400'}`}>
                                                                 {n.title}
                                                             </p>
-                                                            {!n.isRead && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />}
+                                                            {!n.isRead && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0" />}
                                                         </div>
                                                         <p className="text-xs text-zinc-500 mt-1 line-clamp-2 leading-relaxed">
                                                             {n.message}

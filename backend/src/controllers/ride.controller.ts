@@ -4,6 +4,7 @@ import { prisma } from '../config/prisma';
 import { logger } from "../utils/logger";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { getIO } from "../config/socket";
+import { COMMISSION_RATE } from "../config/commision";
 
 export const estimateRideController = async (req: Request, res: Response) => {
     try {
@@ -35,10 +36,16 @@ export const estimateRideController = async (req: Request, res: Response) => {
         const distanceKm = distanceMeters / 1000;
         const durationMin = Math.ceil(durationSeconds / 60);
 
+        const activeSurge = await prisma.surgePricing.findFirst({
+            where: { active: true, city: "Global" },
+            orderBy: { startTime: "desc" }
+        });
+        const surgeMultiplier = activeSurge ? activeSurge.multiplier : 1.0;
+
         const baseFare = 50;
         const perKm = 10;
 
-        const price = baseFare + distanceKm * perKm;
+        const price = Math.round((baseFare + distanceKm * perKm) * surgeMultiplier);
 
         res.json({
             distanceKm,
@@ -84,11 +91,17 @@ export const getVehicleController = async (req: Request, res: Response) => {
             }
         ];
 
+        const activeSurge = await prisma.surgePricing.findFirst({
+            where: { active: true, city: "Global" },
+            orderBy: { startTime: "desc" }
+        });
+        const surgeMultiplier = activeSurge ? activeSurge.multiplier : 1.0;
+
         const baseFare = 50;
 
         const result = vehicles.map((v) => ({
             ...v,
-            price: Math.round(baseFare + distanceKm * 10 * v.multiplier)
+            price: Math.round((baseFare + distanceKm * 10 * v.multiplier) * surgeMultiplier)
         }));
 
         res.json({ vehicles: result })
@@ -126,6 +139,8 @@ export const createRideController = async (req: AuthRequest, res: Response) => {
             }
         });
 
+        const driverEarning = ride.price * (1 - COMMISSION_RATE);
+
         // Find drivers
         const drivers = await prisma.driverProfile.findMany({
             where: {
@@ -139,13 +154,14 @@ export const createRideController = async (req: AuthRequest, res: Response) => {
             }
         });
 
+
         // Create notifications
         if (drivers.length > 0) {
             await prisma.notification.createMany({
                 data: drivers.map((driver) => ({
                     userId: driver.userId,
                     title: "New Ride Request",
-                    message: `New ride available (${ride.distanceKm} km, ₹${ride.price})`,
+                    message: `New ride available (${ride.distanceKm} km, ₹${driverEarning})`,
                     type: "ride_request"
                 }))
             })
@@ -153,12 +169,15 @@ export const createRideController = async (req: AuthRequest, res: Response) => {
 
         const io = getIO();
 
+
+
         const room = `drivers-${ride.vehicleType}`;
         console.log("Emitting to room:", room);
 
         io.to(room).emit("new-ride", {
             id: ride.id,
             price: ride.price,
+            driverEarning: driverEarning,
             distance: ride.distanceKm,
             pickup: pickup,
             drop: drop,

@@ -12,6 +12,7 @@ import rideRoutes from './routes/ride.route';
 import driverRoutes from './routes/driver.routes';
 import walletRoutes from './routes/wallet.route';
 import notificationRoutes from './routes/notification.route';
+import adminRoutes from './routes/admin.routes';
 import { logger } from './utils/logger';
 import { globalLimiter, authLimiter } from './middleware/rateLimit.middleware';
 
@@ -49,5 +50,6 @@ app.use('/api/rides', rideRoutes);
 app.use('/api/driver', driverRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 export default app;

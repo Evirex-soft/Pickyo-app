@@ -4,6 +4,7 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { logger } from "../utils/logger";
 import { getIO } from "../config/socket";
 import { RideStatus } from "@prisma/client";
+import { COMMISSION_RATE } from "../config/commision";
 
 
 export const toggleDriverStatusController = async (req: AuthRequest, res: Response) => {
@@ -61,10 +62,16 @@ export const checkPendingRidesController = async (req: AuthRequest, res: Respons
 
         logger.info(`Driver ${req.user.userId} checked for pending rides, found ${rides.length}`);
 
+        const COMMISION_RATE = COMMISSION_RATE;
+
         const rideResponse = rides.map((ride) => {
+            const driverEarning = ride.price * (1 - COMMISION_RATE);
+
             return {
                 id: ride.id,
                 price: ride.price,
+                driverEarning: driverEarning,
+
                 distance: ride.distanceKm,
                 pickup: {
                     address: ride.rideLocation?.pickupAddress || "Unknown location",
@@ -237,6 +244,24 @@ export const completeTripController = async (req: AuthRequest, res: Response) =>
             where: { id: rideId },
             data: {
                 status: "completed"
+            }
+        });
+
+        // Commision calculation
+        const COMMISION_RATE = COMMISSION_RATE
+
+        const totalAmount = ride.price;
+        const adminCommision = totalAmount * COMMISION_RATE;
+        const driverEarning = totalAmount - adminCommision;
+
+        await prisma.payment.create({
+            data: {
+                rideId: ride.id,
+                amount: totalAmount,
+                adminCommission: adminCommision,
+                driverEarning,
+                method: "cash",
+                status: "paid"
             }
         });
 
