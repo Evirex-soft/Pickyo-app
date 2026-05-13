@@ -17,6 +17,7 @@ import { getFraudReportListController } from '../controllers/admin/fraud.control
 import { getHeatMapAnalyticsController } from '../controllers/admin/heatmap.controller';
 import { getPermissionController } from '../controllers/admin/permission.controller';
 import { getAuditLogsController } from '../controllers/admin/audit.controller';
+import { getPendingVerificationsController, processVerification } from '../controllers/admin/verification.controller';
 
 const router = Router();
 
@@ -71,5 +72,9 @@ router.get('/permissions', protect, allowRoles("admin"), getPermissionController
 
 // Get Audit logs
 router.get('/audit-logs', protect, allowRoles("admin"), getAuditLogsController);
+
+// Verifications
+router.get('/verification', protect, allowRoles("admin"), getPendingVerificationsController);
+router.post('/verification', protect, allowRoles("admin"), processVerification);
 
 export default router;

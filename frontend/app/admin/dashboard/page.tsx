@@ -16,10 +16,11 @@ import { Commissions } from "@/components/admin/tabs/Commission";
 import { GeoZones } from "@/components/admin/tabs/GeoZones";
 import { FleetManagement } from "@/components/admin/tabs/FleetManagement";
 import { NotificationsManagement } from "@/components/admin/tabs/Notifications";
-import { FraudDetection } from "../../../components/admin/tabs/FraudDetection";
+import { FraudDetection } from "@/components/admin/tabs/FraudDetection";
 import { Heatmaps } from "@/components/admin/tabs/HeatMaps";
 import { Permissions } from "@/components/admin/tabs/Permissions";
 import { AuditLogs } from "@/components/admin/tabs/AuditLogs";
+import { Verification } from "@/components/admin/tabs/Verifications";
 
 export default function AdminPage() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -32,6 +33,7 @@ export default function AdminPage() {
             case "users": return <UserList />;
             case "drivers": return <DriverList />;
             case "live": return <LiveTracking />;
+            case "verification": return <Verification />;
             case "pricing": return <DynamicPricing />;
             case "analytics": return <Analytics />;
             case "disputes": return <Disputes />;

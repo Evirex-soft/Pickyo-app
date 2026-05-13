@@ -91,3 +91,20 @@ export const getAuditLogs = async () => {
     const response = await api.get('/admin/audit-logs');
     return response.data;
 };
+
+export const getPendingVerifications = async () => {
+    const response = await api.get('/admin/verification');
+    return response.data.data;
+};
+
+export const verifyDriver = async (driverId: string, status: string, rejectionReason?: string) => {
+    const response = await api.post(
+        '/admin/verification',
+        {
+            driverId,
+            status,
+            reason: rejectionReason
+        }
+    );
+    return response.data;
+};

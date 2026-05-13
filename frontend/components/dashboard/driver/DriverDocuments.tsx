@@ -2,21 +2,18 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import {
-    FileText,
-    BadgeCheck,
-    AlertCircle,
-    Eye,
-    RefreshCcw,
     Plus,
     X,
     Calendar,
     UploadCloud,
     Loader2,
     CheckCircle2,
-    Clock
+    Clock,
+    Trash2
 } from "lucide-react";
-import { getDriverProfile, uploadVehicleDocument } from "@/services/driver.service";
+import { getDriverProfile, uploadVehicleDocument, deleteDriverDocument } from "@/services/driver.service";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function DriverDocuments() {
     const [loading, setLoading] = useState(true);
@@ -46,6 +43,33 @@ export default function DriverDocuments() {
     useEffect(() => {
         fetchData();
     }, []);
+
+
+    const handleDelete = async (id: string) => {
+        toast(
+            "Delete this document permanently?",
+            {
+                description: "This action cannot be undone.",
+                action: {
+                    label: "Delete",
+                    onClick: async () => {
+                        try {
+                            toast.loading("Removing document...", { id: "del-doc" });
+                            await deleteDriverDocument(id);
+                            toast.success("Document deleted", { id: "del-doc" });
+                            fetchData();
+                        } catch (error) {
+                            toast.error("Failed to Delete Document", { id: "del-doc" });
+                        }
+                    },
+                },
+                cancel: {
+                    label: "Cancel",
+                    onClick: () => { },
+                },
+            }
+        );
+    };
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -140,6 +164,14 @@ export default function DriverDocuments() {
                                     {doc.isVerified ? "Verified" : "Pending"}
                                 </span>
                             </div>
+
+                            {/* DELETE BUTTON */}
+                            <button
+                                onClick={() => handleDelete(doc.id)}
+                                className="absolute top-6 right-6 p-3 bg-white/90 backdrop-blur-md text-red-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity shadow-xl hover:bg-red-600 hover:text-white"
+                            >
+                                <Trash2 size={18} />
+                            </button>
                         </div>
 
                         {/* CONTENT */}
@@ -191,10 +223,11 @@ export default function DriverDocuments() {
                                     value={form.type}
                                     onChange={e => setForm({ ...form, type: e.target.value })}
                                 >
-                                    <option value="license">Driving License</option>
                                     <option value="insurance">Insurance</option>
                                     <option value="rc">Registration (RC)</option>
-                                    <option value="permit">Vehicle Permit</option>
+                                    <option value="pollution">Vehicle Pollution</option>
+                                    <option value="license">Driving License</option>
+                                    <option value="aadhar">Aadhar Card</option>
                                 </select>
                             </div>
 

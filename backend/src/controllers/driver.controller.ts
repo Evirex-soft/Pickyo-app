@@ -393,6 +393,7 @@ export const uploadDriverDocumentController = async (req: AuthRequest, res: Resp
             return res.status(400).json({ message: "Document type is required" });
         }
 
+        // Get Driver Profile
         const driver = await prisma.driverProfile.findUnique({
             where: { userId }
         });
@@ -401,18 +402,45 @@ export const uploadDriverDocumentController = async (req: AuthRequest, res: Resp
             return res.status(404).json({ message: "Driver profile not found" });
         };
 
-        const document = await prisma.driverDocument.create({
-            data: {
+        //  Check if a document of this type already exists 
+        const existingDoc = await prisma.driverDocument.findFirst({
+            where: {
                 driverId: driver.id,
-                type,
-                url: req.file.path,
-                expiryDate: expiryDate ? new Date(expiryDate) : null,
-            },
+                type: type
+            }
         });
+
+        let document;
+
+        if (existingDoc) {
+            // UPDATE existing document
+            document = await prisma.driverDocument.update({
+                where: { id: existingDoc.id },
+                data: {
+                    url: req.file.path,
+                    expiryDate: expiryDate ? new Date(expiryDate) : null,
+                    isVerified: false,
+                    createdAt: new Date()
+                },
+            });
+            logger.info(`Updated existing ${type} for driver ${userId}`);
+        } else {
+            // CREATE new document if it doesn't exist
+            document = await prisma.driverDocument.create({
+                data: {
+                    driverId: driver.id,
+                    type,
+                    url: req.file.path,
+                    expiryDate: expiryDate ? new Date(expiryDate) : null,
+                    isVerified: false
+                },
+            });
+            logger.info(`Created new ${type} for driver ${userId}`);
+        }
 
         res.json(document);
     } catch (error) {
-        logger.error(`Error uploading document for driver ${req.user?.userId}: ${error}`);
+        logger.error(`Error processing document for driver ${req.user?.userId}: ${error}`);
         res.status(500).json({ message: "Upload failed" });
     }
 };
